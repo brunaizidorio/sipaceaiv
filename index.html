@@ -1,189 +1,1108 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SIPACEA IV</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <script src="https://kit.fontawesome.com/6b2d8d6d6d.js" crossorigin="anonymous"></script>
-
+    <title>Dashboard & Analisador Visual de Planilhas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js para Gráficos Visuais -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS para ler ODS, XLSX, CSV localmente no navegador -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Marked.js para renderizar respostas da IA em Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+    </style>
 </head>
-
-<body>
-
-<header>
-
-<div class="container">
-
-<h1>SIPACEA IV</h1>
-
-<nav>
-
-<a href="#inicio">Início</a>
-<a href="#documentos">Documentos</a>
-<a href="#ferramentas">Ferramentas</a>
-<a href="#painel">Painel</a>
-<a href="#noticias">Notícias</a>
-<a href="#contato">Contato</a>
-
-</nav>
-
-</div>
-
-</header>
-
-<section class="hero" id="inicio">
-
-<div class="hero-content">
-
-<h2>Segurança Operacional</h2>
-
-<p>
-
-Sistema de apoio às atividades da Segurança Operacional do SIPACEA IV.
-
-</p>
-
-<a href="#documentos" class="btn">
-Acessar Documentos
-</a>
-
-</div>
-
-</section>
-
-<section id="documentos">
-
-<h2>Documentos</h2>
-
-<div class="cards">
-
-<div class="card">
-
-<i class="fas fa-book"></i>
-
-<h3>ICA</h3>
-
-<p>Instruções do Comando da Aeronáutica.</p>
-
-<button>Acessar</button>
-
-</div>
-
-<div class="card">
-
-<i class="fas fa-file"></i>
-
-<h3>MCA</h3>
-
-<p>Manuais e procedimentos.</p>
-
-<button>Acessar</button>
-
-</div>
-
-<div class="card">
-
-<i class="fas fa-plane"></i>
-
-<h3>Cartas Operacionais</h3>
-
-<p>Cartas e publicações ATS.</p>
-
-<button>Acessar</button>
-
-</div>
-
-<div class="card">
-
-<i class="fas fa-download"></i>
-
-<h3>Downloads</h3>
-
-<p>Modelos e formulários.</p>
-
-<button>Acessar</button>
-
-</div>
-
-</div>
-
-</section>
-
-<section class="cinza" id="ferramentas">
-
-<section class="cinza" id="ferramentas">
-
-<h2>Assistentes de Reporte</h2>
-
-<div class="cards">
-
-<div class="card">
-<i class="fas fa-bed"></i>
-<h3>Fadiga</h3>
-<p>Assistente para elaboração do reporte de fadiga.</p>
-<button>Acessar</button>
-</div>
-
-<div class="card">
-<i class="fas fa-file-alt"></i>
-<h3>RELPREV</h3>
-<p>Assistente para preenchimento do RELPREV.</p>
-<button>Acessar</button>
-</div>
-
-<div class="card">
-<i class="fas fa-book"></i>
-<h3>LHD</h3>
-<p>Assistente para preenchimento do LHD.</p>
-<button>Acessar</button>
-</div>
-
-<div class="card">
-<i class="fas fa-exclamation-circle"></i>
-<h3>FNO</h3>
-<p>Assistente para registro de FNO.</p>
-<button>Acessar</button>
-</div>
-
-</div>
-
-</section>
-
-<h2>Contato</h2>
-
-<form>
-
-<input type="text" placeholder="Nome">
-
-<input type="email" placeholder="Email">
-
-<textarea placeholder="Mensagem"></textarea>
-
-<button>Enviar</button>
-
-</form>
-
-</section>
-
-<footer>
-
-<p>
-
-© 2026 SIPACEA IV
-
-</p>
-
-</footer>
-
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-brand-600 rounded-lg text-white">
+                    <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">DataViz Studio</h1>
+                    <p class="text-xs text-slate-400">Analisador e Dashboard Visual de Planilhas (.ods / .xlsx)</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="btnSample" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-lg transition flex items-center gap-2 border border-slate-700">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+                    Carregar Dados de Exemplo
+                </button>
+                <button id="btnApiKey" onclick="openApiKeyModal()" class="text-xs bg-brand-600/20 hover:bg-brand-600/30 text-brand-300 border border-brand-500/30 px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+                    <i data-lucide="key" class="w-3.5 h-3.5 text-brand-400"></i>
+                    <span id="apiKeyStatusText">Chave Gemini IA</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Modal Configuração da API Key Gemini -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                <h3 class="font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="key" class="w-5 h-5 text-brand-600"></i>
+                    Configurar API Key Gemini
+                </h3>
+                <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                A aplicação utiliza a API oficial do Google Gemini. Se você possui uma chave customizada, insira-a abaixo. Caso contrário, a aplicação utilizará o ambiente padrão configurado.
+            </p>
+            <div>
+                <label for="customApiKeyInput" class="block text-xs font-semibold text-slate-700 mb-1">Gemini API Key (Opcional):</label>
+                <input type="password" id="customApiKeyInput" placeholder="AIzaSy..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono focus:ring-2 focus:ring-brand-500 outline-none">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeApiKeyModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
+                <button onclick="saveApiKey()" class="px-4 py-2 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow">Salvar Configuração</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Dropzone Section -->
+        <section id="dropzoneSection" class="glass-panel rounded-2xl p-8 text-center border-2 border-dashed border-slate-300 hover:border-brand-500 transition cursor-pointer relative shadow-sm">
+            <input type="file" id="fileInput" accept=".ods, .xlsx, .xls, .csv" class="hidden">
+            <div class="max-w-md mx-auto flex flex-col items-center justify-center space-y-4">
+                <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 shadow-inner">
+                    <i data-lucide="file-up" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Arraste sua planilha aqui</h2>
+                    <p class="text-sm text-slate-500 mt-1">Suporta arquivos <b>.ODS</b> (LibreOffice Calc), <b>.XLSX</b> (Excel) e <b>.CSV</b></p>
+                </div>
+                <button onclick="document.getElementById('fileInput').click()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition shadow-md shadow-brand-500/20 flex items-center gap-2">
+                    <i data-lucide="folder-open" class="w-4 h-4"></i>
+                    Selecionar Arquivo do Computador
+                </button>
+                <p class="text-xs text-slate-400">Seu arquivo é processado 100% no seu navegador de forma segura e privada.</p>
+            </div>
+        </section>
+
+        <!-- Dashboard Display Area (Hidden by Default) -->
+        <div id="dashboardArea" class="hidden space-y-8">
+
+            <!-- Sheet Bar & File Summary -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-4 rounded-xl">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 id="fileNameText" class="font-semibold text-slate-900 text-sm">planilha.ods</h3>
+                        <p id="fileMetaText" class="text-xs text-slate-500">0 linhas • 0 colunas</p>
+                    </div>
+                </div>
+
+                <!-- Sheet Selector Dropdown -->
+                <div class="flex items-center gap-3">
+                    <label for="sheetSelect" class="text-xs font-medium text-slate-600">Aba ativa:</label>
+                    <select id="sheetSelect" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </select>
+                </div>
+            </div>
+
+            <!-- Metric Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpiGrid">
+                <!-- Cards Dinâmicos Gerados Via JS -->
+            </div>
+
+            <!-- Dynamic Chart Controls & Canvas -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Controls & Chart 1 -->
+                <div class="lg:col-span-2 glass-panel rounded-2xl p-6 space-y-4 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                                <i data-lucide="line-chart" class="w-5 h-5 text-brand-600"></i>
+                                Visualização Principal
+                            </h3>
+                            <p class="text-xs text-slate-500">Ajuste os eixos para analisar tendências e distribuições</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <select id="selectX" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500">
+                                <option value="">Eixo X (Categorias)</option>
+                            </select>
+                            <select id="selectY" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500">
+                                <option value="">Eixo Y (Valores)</option>
+                            </select>
+                            <select id="selectChartType" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-medium text-brand-600">
+                                <option value="bar">Barras</option>
+                                <option value="line">Linha</option>
+                                <option value="pie">Pizza</option>
+                                <option value="doughnut">Rosca</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="h-80 relative w-full flex items-center justify-center">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Secondary Insights / Doughnut -->
+                <div class="glass-panel rounded-2xl p-6 space-y-4 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="pb-4 border-b border-slate-200 flex items-center justify-between">
+                            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                                <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-600"></i>
+                                Proporção & Participação
+                            </h3>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">Distribuição percentual por grupos</p>
+                    </div>
+                    <div class="h-64 relative w-full my-auto">
+                        <canvas id="secondaryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Gemini Power Suite -->
+            <div class="glass-panel rounded-2xl p-6 border border-brand-200 shadow-md space-y-6 bg-gradient-to-br from-white via-slate-50/50 to-brand-50/30">
+                
+                <!-- AI Suite Header & Tabs -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-gradient-to-tr from-brand-600 to-indigo-600 text-white rounded-xl shadow-md">
+                            <i data-lucide="sparkles" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                                DataViz Gemini AI Suite
+                                <span class="bg-brand-100 text-brand-700 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-brand-300">Gemini 3.1 & Imagen 4.0</span>
+                            </h3>
+                            <p class="text-xs text-slate-500">Agentes de Inteligência Artificial para análise profunda, diálogo, voz e geração visual</p>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Tabs -->
+                    <div class="flex flex-wrap gap-1 bg-slate-200/80 p-1 rounded-xl text-xs font-medium">
+                        <button onclick="switchAiTab('deep')" id="tabBtn-deep" class="ai-tab-btn active px-3 py-1.5 rounded-lg transition bg-white text-brand-700 shadow-sm">
+                            <i data-lucide="file-text" class="w-3.5 h-3.5 inline mr-1"></i> Relatório Profundo
+                        </button>
+                        <button onclick="switchAiTab('chat')" id="tabBtn-chat" class="ai-tab-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">
+                            <i data-lucide="message-square-code" class="w-3.5 h-3.5 inline mr-1"></i> Conversar com Dados
+                        </button>
+                        <button onclick="switchAiTab('audio')" id="tabBtn-audio" class="ai-tab-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">
+                            <i data-lucide="volume-2" class="w-3.5 h-3.5 inline mr-1"></i> Áudio / Voz (TTS)
+                        </button>
+                        <button onclick="switchAiTab('infographic')" id="tabBtn-infographic" class="ai-tab-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">
+                            <i data-lucide="image" class="w-3.5 h-3.5 inline mr-1"></i> Infográfico Visual
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab Content 1: Relatório Profundo (Gemini LLM + Search Grounding) -->
+                <div id="aiTabContent-deep" class="space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-700 font-medium">
+                                <input type="checkbox" id="chkSearchGrounding" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 w-4 h-4">
+                                <span>Ativar Pesquisa Web Google (Grounding)</span>
+                            </label>
+                            <span class="text-[11px] text-slate-400 hidden sm:inline">| Cruza os dados com benchmark de mercado atualizado</span>
+                        </div>
+                        <button id="btnRunDeepAnalysis" onclick="generateGeminiDeepAnalysis()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow flex items-center gap-2">
+                            <i data-lucide="cpu" class="w-4 h-4"></i>
+                            Gerar Análise Profunda com IA
+                        </button>
+                    </div>
+
+                    <!-- Analysis Output Container -->
+                    <div id="deepAnalysisOutput" class="bg-white rounded-xl p-5 border border-slate-200 min-h-[160px] text-xs text-slate-700 leading-relaxed space-y-3">
+                        <div class="text-center py-8 text-slate-400 space-y-2">
+                            <i data-lucide="brain" class="w-8 h-8 mx-auto stroke-1 text-slate-300"></i>
+                            <p>Clique em <b>"Gerar Análise Profunda com IA"</b> para disparar o agente analítico do Gemini.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Content 2: Conversar com Dados (Interactive Q&A Chat) -->
+                <div id="aiTabContent-chat" class="hidden space-y-4">
+                    <div id="chatHistoryBox" class="bg-white rounded-xl p-4 border border-slate-200 h-64 overflow-y-auto space-y-3 text-xs">
+                        <div class="bg-brand-50 p-3 rounded-xl text-brand-800 border border-brand-100 max-w-lg">
+                            👋 Olá! Sou seu assistente de análise de dados Gemini. Faça qualquer pergunta sobre os valores, tendências ou estatísticas desta aba!
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="chatInputPrompt" placeholder="Ex: Qual categoria teve maior faturamento e qual a margem média?" onkeydown="if(event.key==='Enter') sendDataChatQuery()" class="flex-1 bg-white border border-slate-300 text-xs rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button id="btnSendChat" onclick="sendDataChatQuery()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium px-5 py-2.5 rounded-xl transition flex items-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                            Perguntar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab Content 3: Resumo em Áudio (Gemini TTS API) -->
+                <div id="aiTabContent-audio" class="hidden space-y-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <h4 class="font-semibold text-slate-900 text-sm flex items-center gap-2">
+                                <i data-lucide="mic" class="w-4 h-4 text-brand-600"></i>
+                                Narração Executiva por Voz da IA
+                            </h4>
+                            <p class="text-xs text-slate-500">Gere um briefing em áudio falado sintetizado em tempo real pelo modelo <b>Gemini 2.5 Flash TTS</b>.</p>
+                        </div>
+                        <button id="btnGenerateAudio" onclick="generateAudioBriefing()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow flex items-center gap-2 whitespace-nowrap">
+                            <i data-lucide="play-circle" class="w-4 h-4"></i>
+                            Gerar e Ouvir Áudio
+                        </button>
+                    </div>
+
+                    <div id="audioPlayerContainer" class="hidden bg-white p-4 rounded-xl border border-slate-200 flex flex-col items-center justify-center space-y-3">
+                        <p class="text-xs font-medium text-slate-700 flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+                            Áudio Sintetizado Pronto
+                        </p>
+                        <audio id="ttsAudioElement" controls class="w-full max-w-md"></audio>
+                    </div>
+                </div>
+
+                <!-- Tab Content 4: Infográfico Visual (Imagen 4.0 API) -->
+                <div id="aiTabContent-infographic" class="hidden space-y-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="space-y-1">
+                            <h4 class="font-semibold text-slate-900 text-sm flex items-center gap-2">
+                                <i data-lucide="palette" class="w-4 h-4 text-indigo-600"></i>
+                                Criador Visual de Infográfico Ilustrativo
+                            </h4>
+                            <p class="text-xs text-slate-500">Gere uma imagem conceitual/infográfico profissional baseada nos dados usando <b>Imagen 4.0</b>.</p>
+                        </div>
+                        <button id="btnGenerateInfographic" onclick="generateInfographic()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow flex items-center gap-2 whitespace-nowrap">
+                            <i data-lucide="wand-2" class="w-4 h-4"></i>
+                            Gerar Infográfico
+                        </button>
+                    </div>
+
+                    <div id="infographicDisplayArea" class="bg-white p-4 rounded-xl border border-slate-200 min-h-[220px] flex items-center justify-center">
+                        <div class="text-center text-slate-400 text-xs">
+                            <i data-lucide="image-plus" class="w-10 h-10 mx-auto stroke-1 text-slate-300 mb-2"></i>
+                            <p>O infográfico gerado pela IA aparecerá aqui em alta resolução.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Data Table Section -->
+            <div class="glass-panel rounded-2xl p-6 space-y-4 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                            <i data-lucide="table" class="w-5 h-5 text-slate-700"></i>
+                            Tabela de Dados Brutos
+                        </h3>
+                        <p class="text-xs text-slate-500">Visualize e pesquise os registros extraídos da planilha</p>
+                    </div>
+                    <div class="relative max-w-xs w-full">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+                        <input type="text" id="searchInput" placeholder="Pesquisar registro..." class="w-full bg-white border border-slate-300 text-xs rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs text-slate-700">
+                        <thead id="tableHead" class="bg-slate-100 text-slate-900 font-semibold border-b border-slate-200">
+                            <!-- JS Cabeçalho -->
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-200 bg-white">
+                            <!-- JS Linhas -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
+            DataViz Studio • Dashboard visual interativo pronto para apresentações e relatórios.
+        </div>
+    </footer>
+
+    <!-- Logic JS -->
+    <script>
+        // Global API Key Config
+        let userApiKey = localStorage.getItem('gemini_api_key') || "";
+
+        function getApiKey() {
+            return userApiKey || "";
+        }
+
+        function openApiKeyModal() {
+            document.getElementById('customApiKeyInput').value = userApiKey;
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+        }
+
+        function closeApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            userApiKey = document.getElementById('customApiKeyInput').value.trim();
+            localStorage.setItem('gemini_api_key', userApiKey);
+            updateApiKeyStatus();
+            closeApiKeyModal();
+        }
+
+        function updateApiKeyStatus() {
+            const statusText = document.getElementById('apiKeyStatusText');
+            if (userApiKey) {
+                statusText.innerText = "Chave Gemini (Ativa)";
+            } else {
+                statusText.innerText = "Chave Gemini IA";
+            }
+        }
+        updateApiKeyStatus();
+
+        // Exponential Backoff Fetch Helper
+        async function fetchWithRetry(url, options, maxRetries = 3) {
+            let delay = 1000;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const res = await fetch(url, options);
+                    if (res.ok) return res;
+                    if (res.status === 429 || res.status >= 500) {
+                        await new Promise(r => setTimeout(r, delay));
+                        delay *= 2;
+                        continue;
+                    }
+                    return res;
+                } catch (err) {
+                    if (i === maxRetries - 1) throw err;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // Tab Switcher
+        function switchAiTab(tabName) {
+            document.querySelectorAll('.ai-tab-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-white', 'text-brand-700', 'shadow-sm');
+                btn.classList.add('text-slate-600');
+            });
+            const activeBtn = document.getElementById(`tabBtn-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-white', 'text-brand-700', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-600');
+            }
+
+            ['deep', 'chat', 'audio', 'infographic'].forEach(t => {
+                document.getElementById(`aiTabContent-${t}`).classList.add('hidden');
+            });
+            document.getElementById(`aiTabContent-${tabName}`).classList.remove('hidden');
+        }
+
+        // Helper to extract a summary context string of the current sheet
+        function getDatasetContextSummary() {
+            if (!currentSheetData || currentSheetData.length === 0) return "";
+            const keys = Object.keys(currentSheetData[0]);
+            const sampleRows = currentSheetData.slice(0, 15);
+            return JSON.stringify({
+                total_records: currentSheetData.length,
+                columns: keys,
+                data_sample: sampleRows
+            }, null, 2);
+        }
+
+        // Feature 1: Gemini Deep Analysis (gemini-3-flash-preview)
+        async function generateGeminiDeepAnalysis() {
+            const outputDiv = document.getElementById('deepAnalysisOutput');
+            const btn = document.getElementById('btnRunDeepAnalysis');
+            const useGrounding = document.getElementById('chkSearchGrounding').checked;
+
+            if (!currentSheetData || currentSheetData.length === 0) {
+                outputDiv.innerHTML = `<p class="text-rose-500">Por favor, carregue uma planilha antes de disparar a análise.</p>`;
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando IA...`;
+            outputDiv.innerHTML = `
+                <div class="flex items-center justify-center py-8 text-brand-600 gap-3">
+                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
+                    <span>O Gemini está analisando os padrões, calculando tendências e gerando o relatório...</span>
+                </div>
+            `;
+            lucide.createIcons();
+
+            const datasetSummary = getDatasetContextSummary();
+            const systemPrompt = "Você é um Analista de Dados e Cientista de Negócios Sênior. Forneça um relatório executivo claro, objetivo, em português do Brasil, usando formatação Markdown (títulos ##, tópicos -, negrito **). Seja perspicaz, identifique anomalias, oportunidades de negócios e recomende decisões baseadas nos dados fornecidos.";
+            
+            const userPrompt = `Analise detalhadamente a seguinte amostra de planilha:\n\n${datasetSummary}\n\nForneça:\n1. ## Resumo Executivo & Principais Constatações\n2. ## Destaques Estatísticos & Desempenho por Categoria\n3. ## Pontos de Atenção ou Anomalias nos Dados\n4. ## Recomendações Estratégicas para Tomada de Decisão`;
+
+            const apiKey = getApiKey();
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            if (useGrounding) {
+                payload.tools = [{ "google_search": {} }];
+            }
+
+            try {
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    let markdownText = candidate.content.parts[0].text;
+                    
+                    // Render sources if grounding was enabled
+                    let sourcesHtml = "";
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        const sources = groundingMetadata.groundingAttributions
+                            .map(a => ({ uri: a.web?.uri, title: a.web?.title }))
+                            .filter(s => s.uri && s.title);
+                        if (sources.length > 0) {
+                            sourcesHtml = `<div class="mt-4 pt-3 border-t border-slate-200 text-[11px] text-slate-500"><b>Fontes de Pesquisa Web:</b><ul class="list-disc pl-4 mt-1">${sources.map(s => `<li><a href="${s.uri}" target="_blank" class="text-brand-600 hover:underline">${s.title}</a></li>`).join('')}</ul></div>`;
+                        }
+                    }
+
+                    outputDiv.innerHTML = `<div class="prose prose-sm max-w-none prose-headings:text-slate-900 prose-headings:font-bold prose-p:text-slate-700">${marked.parse(markdownText)}</div>${sourcesHtml}`;
+                } else {
+                    outputDiv.innerHTML = `<p class="text-rose-600">Não foi possível extrair a resposta do Gemini. Tente novamente.</p>`;
+                }
+            } catch (err) {
+                console.error(err);
+                outputDiv.innerHTML = `<p class="text-rose-600">Erro ao comunicar com a API do Gemini: ${err.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="cpu" class="w-4 h-4"></i> Gerar Análise Profunda com IA`;
+                lucide.createIcons();
+            }
+        }
+
+        // Feature 2: Conversar com Dados (gemini-3-flash-preview)
+        let chatHistoryData = [];
+
+        async function sendDataChatQuery() {
+            const inputEl = document.getElementById('chatInputPrompt');
+            const historyBox = document.getElementById('chatHistoryBox');
+            const btn = document.getElementById('btnSendChat');
+            const question = inputEl.value.trim();
+
+            if (!question) return;
+            if (!currentSheetData || currentSheetData.length === 0) {
+                alert("Por favor, carregue uma planilha primeiro.");
+                return;
+            }
+
+            // Append user question
+            historyBox.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-brand-600 text-white p-3 rounded-xl max-w-md shadow-sm">
+                        ${question}
+                    </div>
+                </div>
+            `;
+            inputEl.value = '';
+            historyBox.scrollTop = historyBox.scrollHeight;
+
+            // Loading state
+            const loadingId = 'loading-' + Date.now();
+            historyBox.innerHTML += `
+                <div id="${loadingId}" class="flex justify-start">
+                    <div class="bg-slate-100 text-slate-600 p-3 rounded-xl flex items-center gap-2">
+                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-brand-600"></i>
+                        <span>Analisando planilha...</span>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            historyBox.scrollTop = historyBox.scrollHeight;
+
+            const datasetSummary = getDatasetContextSummary();
+            const promptWithContext = `O usuário está fazendo uma pergunta sobre a seguinte planilha:\n\n${datasetSummary}\n\nPergunta do usuário: "${question}"\n\nResponda de maneira direta, precisa e amigável em português do Brasil.`;
+
+            const apiKey = getApiKey();
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptWithContext }] }]
+                    })
+                });
+
+                const result = await response.json();
+                const reply = result.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui obter uma resposta válida.";
+
+                document.getElementById(loadingId)?.remove();
+
+                historyBox.innerHTML += `
+                    <div class="flex justify-start">
+                        <div class="bg-white border border-slate-200 text-slate-800 p-3 rounded-xl max-w-md shadow-sm prose prose-xs">
+                            ${marked.parse(reply)}
+                        </div>
+                    </div>
+                `;
+            } catch (err) {
+                document.getElementById(loadingId)?.remove();
+                historyBox.innerHTML += `
+                    <div class="flex justify-start">
+                        <div class="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl">
+                            Erro ao processar pergunta: ${err.message}
+                        </div>
+                    </div>
+                `;
+            } finally {
+                historyBox.scrollTop = historyBox.scrollHeight;
+            }
+        }
+
+        // Feature 3: Resumo em Áudio TTS (gemini-2.5-flash-preview-tts)
+        function base64ToArrayBuffer(base64) {
+            const binaryString = window.atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function pcmToWav(pcmInt16Array, sampleRate) {
+            const numChannels = 1;
+            const bytesPerSample = 2;
+            const blockAlign = numChannels * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const dataSize = pcmInt16Array.length * bytesPerSample;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+
+            const writeString = (v, offset, str) => {
+                for (let i = 0; i < str.length; i++) {
+                    v.setUint8(offset + i, str.charCodeAt(i));
+                }
+            };
+
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, 16, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            let offset = 44;
+            for (let i = 0; i < pcmInt16Array.length; i++, offset += 2) {
+                view.setInt16(offset, pcmInt16Array[i], true);
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        async function generateAudioBriefing() {
+            const btn = document.getElementById('btnGenerateAudio');
+            const playerContainer = document.getElementById('audioPlayerContainer');
+            const audioElement = document.getElementById('ttsAudioElement');
+
+            if (!currentSheetData || currentSheetData.length === 0) {
+                alert("Por favor, carregue uma planilha antes de gerar o áudio.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Sintetizando Voz...`;
+            lucide.createIcons();
+
+            const datasetSummary = getDatasetContextSummary();
+            const textToSay = `Resumo em áudio da planilha: Esta aba possui ${currentSheetData.length} registros e ${Object.keys(currentSheetData[0]).length} colunas. Destaques principais gerados com inteligência artificial para sua apresentação executiva.`;
+
+            const apiKey = getApiKey();
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: `Fale de forma clara, profissional e entusiasmada em português do Brasil: ${textToSay}` }]
+                }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: { voiceName: "Kore" }
+                        }
+                    }
+                }
+            };
+
+            try {
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+
+                if (audioData && mimeType) {
+                    const match = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = match ? parseInt(match[1], 10) : 24000;
+                    const pcmBuffer = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmBuffer);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+
+                    audioElement.src = audioUrl;
+                    playerContainer.classList.remove('hidden');
+                    audioElement.play();
+                } else {
+                    alert("Não foi possível sintetizar o áudio da resposta.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert(`Erro ao sintetizar áudio: ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="play-circle" class="w-4 h-4"></i> Gerar e Ouvir Áudio`;
+                lucide.createIcons();
+            }
+        }
+
+        // Feature 4: Gerador de Infográficos Visuais (imagen-4.0-generate-001)
+        async function generateInfographic() {
+            const btn = document.getElementById('btnGenerateInfographic');
+            const displayArea = document.getElementById('infographicDisplayArea');
+
+            if (!currentSheetData || currentSheetData.length === 0) {
+                alert("Por favor, carregue uma planilha antes de gerar o infográfico.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gerando Arte...`;
+            displayArea.innerHTML = `
+                <div class="text-center py-12 text-brand-600 space-y-3">
+                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto"></i>
+                    <p class="text-xs font-medium">O Imagen 4.0 está renderizando um infográfico profissional para os seus dados...</p>
+                </div>
+            `;
+            lucide.createIcons();
+
+            const keys = Object.keys(currentSheetData[0]).slice(0, 4).join(', ');
+            const imagePrompt = `A clean, modern, high-tech business data infographic presentation slide summarizing data metrics (${keys}), glowing vector elements, professional corporate design, minimal futuristic charts, high resolution 4k graphic design`;
+
+            const apiKey = getApiKey();
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+
+            const payload = {
+                instances: [{ prompt: imagePrompt }],
+                parameters: { sampleCount: 1 }
+            };
+
+            try {
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+                    const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                    displayArea.innerHTML = `
+                        <div class="space-y-3 w-full text-center">
+                            <img src="${imageUrl}" alt="Infográfico Gerado por IA" class="rounded-xl border border-slate-200 shadow-md max-h-[420px] mx-auto object-contain">
+                            <a href="${imageUrl}" download="infografico_dados.png" class="inline-flex items-center gap-1.5 text-xs text-brand-600 font-semibold hover:underline">
+                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar Infográfico em Alta Resolução
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    displayArea.innerHTML = `<p class="text-xs text-rose-500">Erro ao gerar infográfico visual. Tente novamente.</p>`;
+                }
+            } catch (err) {
+                console.error(err);
+                displayArea.innerHTML = `<p class="text-xs text-rose-500">Erro ao chamar API do Imagen 4.0: ${err.message}</p>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="wand-2" class="w-4 h-4"></i> Gerar Infográfico`;
+                lucide.createIcons();
+            }
+        }
+
+        // Existing functions ...
+        let currentWorkbook = null;
+        let currentSheetData = [];
+        let chartInstance1 = null;
+        let chartInstance2 = null;
+
+        // Elements
+        const dropzone = document.getElementById('dropzoneSection');
+        const fileInput = document.getElementById('fileInput');
+        const dashboardArea = document.getElementById('dashboardArea');
+        const sheetSelect = document.getElementById('sheetSelect');
+        const selectX = document.getElementById('selectX');
+        const selectY = document.getElementById('selectY');
+        const selectChartType = document.getElementById('selectChartType');
+
+        // Initialize icons
+        lucide.createIcons();
+
+        // Drag & Drop events
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-brand-500', 'bg-brand-50/50');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('border-brand-500', 'bg-brand-50/50');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-brand-500', 'bg-brand-50/50');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Sample Data Button
+        document.getElementById('btnSample').addEventListener('click', () => {
+            const sampleData = [
+                { "Categoria": "Eletrônicos", "Região": "Sudeste", "Vendas": 45000, "Unidades": 120, "Margem (%)": 24 },
+                { "Categoria": "Roupas & Moda", "Região": "Sul", "Vendas": 28000, "Unidades": 340, "Margem (%)": 35 },
+                { "Categoria": "Alimentos", "Região": "Nordeste", "Vendas": 62000, "Unidades": 890, "Margem (%)": 18 },
+                { "Categoria": "Móveis", "Região": "Centro-Oeste", "Vendas": 31000, "Unidades": 65, "Margem (%)": 28 },
+                { "Categoria": "Cosméticos", "Região": "Sudeste", "Vendas": 19500, "Unidades": 210, "Margem (%)": 42 },
+                { "Categoria": "Esportes", "Região": "Norte", "Vendas": 15000, "Unidades": 95, "Margem (%)": 22 }
+            ];
+            
+            document.getElementById('fileNameText').innerText = "dados_exemplo_vendas.ods";
+            processRawJson(sampleData, "Vendas por Categoria");
+        });
+
+        // Handle Upload File
+        function handleFile(file) {
+            document.getElementById('fileNameText').innerText = file.name;
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                currentWorkbook = XLSX.read(data, { type: 'array' });
+
+                // Populate Sheets Selector
+                sheetSelect.innerHTML = '';
+                currentWorkbook.SheetNames.forEach(sheetName => {
+                    const opt = document.createElement('option');
+                    opt.value = sheetName;
+                    opt.textContent = sheetName;
+                    sheetSelect.appendChild(opt);
+                });
+
+                loadSheet(currentWorkbook.SheetNames[0]);
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        // Sheet Select Change
+        sheetSelect.addEventListener('change', (e) => {
+            loadSheet(e.target.value);
+        });
+
+        function loadSheet(sheetName) {
+            const worksheet = currentWorkbook.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+            processRawJson(json, sheetName);
+        }
+
+        function processRawJson(json, sheetName) {
+            if (!json || json.length === 0) {
+                alert("A aba selecionada está vazia!");
+                return;
+            }
+
+            currentSheetData = json;
+            const keys = Object.keys(json[0]);
+
+            document.getElementById('fileMetaText').innerText = `${json.length} registros • ${keys.length} colunas (${sheetName})`;
+
+            // Populate Select Controls for Axis
+            selectX.innerHTML = '<option value="">Eixo X (Categorias)</option>';
+            selectY.innerHTML = '<option value="">Eixo Y (Valores)</option>';
+
+            let numericKeys = [];
+            let textKeys = [];
+
+            keys.forEach(k => {
+                const sampleVal = json.find(r => r[k] !== "" && r[k] !== null)?.[k];
+                const isNum = typeof sampleVal === 'number' || (!isNaN(parseFloat(sampleVal)) && isFinite(sampleVal));
+                
+                const optX = document.createElement('option');
+                optX.value = k;
+                optX.textContent = k;
+                selectX.appendChild(optX);
+
+                const optY = document.createElement('option');
+                optY.value = k;
+                optY.textContent = k;
+                selectY.appendChild(optY);
+
+                if (isNum) numericKeys.push(k);
+                else textKeys.push(k);
+            });
+
+            // Auto Select Defaults
+            selectX.value = textKeys[0] || keys[0];
+            selectY.value = numericKeys[0] || keys[1] || keys[0];
+
+            // Show Dashboard
+            dashboardArea.classList.remove('hidden');
+
+            // Render Components
+            renderKpis(keys, numericKeys);
+            renderCharts();
+            renderTable();
+            generateAiSummary(numericKeys);
+
+            lucide.createIcons();
+        }
+
+        // Render KPI Cards
+        function renderKpis(allKeys, numericKeys) {
+            const kpiGrid = document.getElementById('kpiGrid');
+            kpiGrid.innerHTML = '';
+
+            // Card 1: Total Records
+            kpiGrid.appendChild(createKpiCard("Total de Registros", currentSheetData.length.toLocaleString('pt-BR'), "list-filter", "border-indigo-500", "bg-indigo-50 text-indigo-600"));
+
+            // Card 2: Number of Fields
+            kpiGrid.appendChild(createKpiCard("Total de Colunas", allKeys.length, "columns", "border-blue-500", "bg-blue-50 text-blue-600"));
+
+            // Cards for top 2 numeric columns
+            numericKeys.slice(0, 2).forEach((numKey, idx) => {
+                const totalSum = currentSheetData.reduce((acc, curr) => acc + (parseFloat(curr[numKey]) || 0), 0);
+                const avg = totalSum / currentSheetData.length;
+                
+                const formattedVal = totalSum > 1000 ? totalSum.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : totalSum.toFixed(2);
+                
+                const colorClass = idx === 0 ? "border-emerald-500" : "border-amber-500";
+                const bgClass = idx === 0 ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600";
+                
+                kpiGrid.appendChild(createKpiCard(`Soma: ${numKey}`, formattedVal, "calculator", colorClass, bgClass, `Média: ${avg.toFixed(2)}`));
+            });
+        }
+
+        function createKpiCard(title, value, icon, borderColor, iconStyle, subtitle = "") {
+            const div = document.createElement('div');
+            div.className = `glass-panel p-5 rounded-2xl border-l-4 ${borderColor} shadow-sm flex items-center justify-between`;
+            div.innerHTML = `
+                <div>
+                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">${title}</p>
+                    <p class="text-2xl font-bold text-slate-900 mt-1">${value}</p>
+                    ${subtitle ? `<p class="text-xs text-slate-500 mt-1">${subtitle}</p>` : ''}
+                </div>
+                <div class="p-3 rounded-xl ${iconStyle}">
+                    <i data-lucide="${icon}" class="w-6 h-6"></i>
+                </div>
+            `;
+            return div;
+        }
+
+        // Render Charts
+        function renderCharts() {
+            const xKey = selectX.value;
+            const yKey = selectY.value;
+            const chartType = selectChartType.value;
+
+            if (!xKey || !yKey) return;
+
+            // Grouping data for chart
+            const labels = [];
+            const dataValues = [];
+
+            const map = new Map();
+            currentSheetData.forEach(row => {
+                const label = String(row[xKey] || 'N/A');
+                const val = parseFloat(row[yKey]) || 0;
+                map.set(label, (map.get(label) || 0) + val);
+            });
+
+            map.forEach((v, k) => {
+                labels.push(k);
+                dataValues.push(v);
+            });
+
+            const colors = [
+                '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', 
+                '#06b6d4', '#f97316', '#64748b', '#84cc16', '#3b82f6'
+            ];
+
+            // Destroy existing charts
+            if (chartInstance1) chartInstance1.destroy();
+            if (chartInstance2) chartInstance2.destroy();
+
+            // Main Chart
+            const ctx1 = document.getElementById('mainChart').getContext('2d');
+            chartInstance1 = new Chart(ctx1, {
+                type: chartType,
+                data: {
+                    labels: labels.slice(0, 15),
+                    datasets: [{
+                        label: `${yKey} por ${xKey}`,
+                        data: dataValues.slice(0, 15),
+                        backgroundColor: chartType === 'line' ? 'rgba(99, 102, 241, 0.2)' : colors,
+                        borderColor: '#4f46e5',
+                        borderWidth: 2,
+                        fill: chartType === 'line',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: ['pie', 'doughnut'].includes(chartType) }
+                    }
+                }
+            });
+
+            // Secondary Chart (Proportions)
+            const ctx2 = document.getElementById('secondaryChart').getContext('2d');
+            chartInstance2 = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.slice(0, 6),
+                    datasets: [{
+                        data: dataValues.slice(0, 6),
+                        backgroundColor: colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+                    }
+                }
+            });
+        }
+
+        // Event listeners for chart controls
+        selectX.addEventListener('change', renderCharts);
+        selectY.addEventListener('change', renderCharts);
+        selectChartType.addEventListener('change', renderCharts);
+
+        // Render Data Table
+        function renderTable() {
+            const tableHead = document.getElementById('tableHead');
+            const tableBody = document.getElementById('tableBody');
+            const searchInput = document.getElementById('searchInput');
+
+            const keys = Object.keys(currentSheetData[0] || {});
+
+            // Header
+            tableHead.innerHTML = `<tr>${keys.map(k => `<th class="px-4 py-3">${k}</th>`).join('')}</tr>`;
+
+            // Function to filter & display rows
+            const filterAndDisplay = () => {
+                const query = searchInput.value.toLowerCase();
+                const filtered = currentSheetData.filter(row => 
+                    Object.values(row).some(v => String(v).toLowerCase().includes(query))
+                );
+
+                tableBody.innerHTML = filtered.slice(0, 50).map(row => `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        ${keys.map(k => `<td class="px-4 py-2.5 whitespace-nowrap">${row[k] !== undefined ? row[k] : ''}</td>`).join('')}
+                    </tr>
+                `).join('');
+            };
+
+            searchInput.addEventListener('input', filterAndDisplay);
+            filterAndDisplay();
+        }
+
+        // Auto Insights Generator
+        function generateAiSummary(numericKeys) {
+            const aiText = document.getElementById('deepAnalysisOutput');
+            if (!numericKeys.length) {
+                aiText.innerHTML = `<p>A planilha foi carregada com sucesso. Clique em <b>"Gerar Análise Profunda com IA"</b> para obter insights automatizados do Gemini.</p>`;
+                return;
+            }
+
+            const key = numericKeys[0];
+            const values = currentSheetData.map(r => parseFloat(r[key])).filter(v => !isNaN(v));
+            const maxVal = Math.max(...values);
+            const minVal = Math.min(...values);
+            const sumVal = values.reduce((a, b) => a + b, 0);
+            const avgVal = sumVal / values.length;
+
+            aiText.innerHTML = `
+                <div class="space-y-2">
+                    <p>• <b>Análise Preliminar (${key}):</b> O valor acumulado nesta aba é de <b>${sumVal.toLocaleString('pt-BR', {maximumFractionDigits: 2})}</b>, com uma média de <b>${avgVal.toFixed(2)}</b> por registro.</p>
+                    <p>• <b>Intervalo de Valores:</b> Pico máximo de <b>${maxVal.toLocaleString('pt-BR')}</b> e valor mínimo de <b>${minVal.toLocaleString('pt-BR')}</b>.</p>
+                    <p class="text-brand-600 font-medium pt-2">💡 Clique no botão <b>"Gerar Análise Profunda com IA"</b> acima para disparar o agente Gemini para um relatório estatístico e estratégico completo!</p>
+                </div>
+            `;
+        }
+    </script>
 </body>
-
 </html>
