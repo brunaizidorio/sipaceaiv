@@ -44,7 +44,6 @@
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header -->
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -69,7 +68,6 @@
         </div>
     </header>
 
-    <!-- Modal Configuração da API Key Gemini -->
     <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-4">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100">
@@ -93,7 +91,6 @@
         </div>
     </div>
 
-    <!-- Content Area -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         <!-- Dropzone Section -->
@@ -115,7 +112,6 @@
             </div>
         </section>
 
-        <!-- Dashboard Display Area (Hidden by Default) -->
         <div id="dashboardArea" class="hidden space-y-8">
 
             <!-- Sheet Bar & File Summary -->
@@ -143,34 +139,60 @@
                 <!-- Cards Dinâmicos Gerados Via JS -->
             </div>
 
-            <!-- Dynamic Chart Controls & Canvas -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                 <!-- Controls & Chart 1 -->
                 <div class="lg:col-span-2 glass-panel rounded-2xl p-6 space-y-4 shadow-sm">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-                        <div>
-                            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                                <i data-lucide="line-chart" class="w-5 h-5 text-brand-600"></i>
-                                Visualização Principal
-                            </h3>
-                            <p class="text-xs text-slate-500">Ajuste os eixos para analisar tendências e distribuições</p>
+                    <div class="flex flex-col space-y-3 pb-4 border-b border-slate-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                                    <i data-lucide="line-chart" class="w-5 h-5 text-brand-600"></i>
+                                    Evolução Mensal do Movimento & Ocorrências (SIGCEA / NADSO)
+                                </h3>
+                                <p class="text-xs text-slate-500">Eixo X por Meses • Eixo Y por Métricas • Filtro por Órgão</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <select id="selectChartType" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-medium text-brand-600">
+                                    <option value="line">Linha (Evolução Temporal)</option>
+                                    <option value="bar">Barras Comparativas</option>
+                                    <option value="pie">Pizza</option>
+                                    <option value="doughnut">Rosca</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="flex flex-wrap gap-2">
-                            <select id="selectX" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500">
-                                <option value="">Eixo X (Categorias)</option>
-                            </select>
-                            <select id="selectY" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500">
-                                <option value="">Eixo Y (Valores)</option>
-                            </select>
-                            <select id="selectChartType" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-medium text-brand-600">
-                                <option value="bar">Barras</option>
-                                <option value="line">Linha</option>
-                                <option value="pie">Pizza</option>
-                                <option value="doughnut">Rosca</option>
-                            </select>
+
+                        <!-- Dropdowns de Controle Específicos -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                            <div>
+                                <label for="selectFilterOrgao" class="block text-[11px] font-bold text-brand-700 mb-1">🏢 1. Filtrar por Órgão:</label>
+                                <select id="selectFilterOrgao" class="w-full bg-white border border-brand-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-semibold text-slate-800 shadow-sm">
+                                    <option value="ALL">Todos os Órgãos</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="selectX" class="block text-[11px] font-bold text-slate-700 mb-1">📅 2. Eixo X (Meses):</label>
+                                <select id="selectX" class="w-full bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-medium text-slate-800">
+                                    <option value="">Selecione o Mês / Período</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="selectY" class="block text-[11px] font-bold text-slate-700 mb-1">📊 3. Eixo Y (Métrica/Valor):</label>
+                                <select id="selectY" class="w-full bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-medium text-slate-800">
+                                    <option value="Movimentos">Movimentos</option>
+                                    <option value="Incidente">Incidente</option>
+                                    <option value="RI">RI (Relatório de Incidente)</option>
+                                    <option value="RA">RA (Relatório de Análise)</option>
+                                    <option value="Coordenação">Coordenação</option>
+                                    <option value="Planejamento">Planejamento</option>
+                                    <option value="Supervisão">Supervisão</option>
+                                    <option value="Habilidade">Habilidade</option>
+                                    <option value="Ocorrência">Ocorrência</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
+
                     <div class="h-80 relative w-full flex items-center justify-center">
                         <canvas id="mainChart"></canvas>
                     </div>
@@ -185,7 +207,7 @@
                                 Proporção & Participação
                             </h3>
                         </div>
-                        <p class="text-xs text-slate-500 mt-2">Distribuição percentual por grupos</p>
+                        <p class="text-xs text-slate-500 mt-2">Distribuição percentual por grupos selecionados</p>
                     </div>
                     <div class="h-64 relative w-full my-auto">
                         <canvas id="secondaryChart"></canvas>
@@ -193,7 +215,6 @@
                 </div>
             </div>
 
-            <!-- AI Gemini Power Suite -->
             <div class="glass-panel rounded-2xl p-6 border border-brand-200 shadow-md space-y-6 bg-gradient-to-br from-white via-slate-50/50 to-brand-50/30">
                 
                 <!-- AI Suite Header & Tabs -->
@@ -228,7 +249,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Content 1: Relatório Profundo (Gemini LLM + Search Grounding) -->
+                <!-- Tab Content 1: Relatório Profundo -->
                 <div id="aiTabContent-deep" class="space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
                         <div class="flex items-center gap-3">
@@ -253,15 +274,15 @@
                     </div>
                 </div>
 
-                <!-- Tab Content 2: Conversar com Dados (Interactive Q&A Chat) -->
+                <!-- Tab Content 2: Conversar com Dados -->
                 <div id="aiTabContent-chat" class="hidden space-y-4">
                     <div id="chatHistoryBox" class="bg-white rounded-xl p-4 border border-slate-200 h-64 overflow-y-auto space-y-3 text-xs">
                         <div class="bg-brand-50 p-3 rounded-xl text-brand-800 border border-brand-100 max-w-lg">
-                            👋 Olá! Sou seu assistente de análise de dados Gemini. Faça qualquer pergunta sobre os valores, tendências ou estatísticas desta aba!
+                            👋 Olá! Sou seu assistente de análise de dados Gemini. Faça qualquer pergunta sobre os órgãos, anos/meses, valores ou estatísticas desta aba!
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <input type="text" id="chatInputPrompt" placeholder="Ex: Qual categoria teve maior faturamento e qual a margem média?" onkeydown="if(event.key==='Enter') sendDataChatQuery()" class="flex-1 bg-white border border-slate-300 text-xs rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <input type="text" id="chatInputPrompt" placeholder="Ex: Qual órgão teve maior movimento em 2024 e qual a variação mensal?" onkeydown="if(event.key==='Enter') sendDataChatQuery()" class="flex-1 bg-white border border-slate-300 text-xs rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
                         <button id="btnSendChat" onclick="sendDataChatQuery()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium px-5 py-2.5 rounded-xl transition flex items-center gap-2">
                             <i data-lucide="send" class="w-4 h-4"></i>
                             Perguntar
@@ -320,7 +341,6 @@
 
             </div>
 
-            <!-- Data Table Section -->
             <div class="glass-panel rounded-2xl p-6 space-y-4 shadow-sm">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
@@ -359,7 +379,6 @@
         </div>
     </footer>
 
-    <!-- Logic JS -->
     <script>
         // Global API Key Config
         let userApiKey = localStorage.getItem('gemini_api_key') || "";
@@ -415,7 +434,6 @@
             }
         }
 
-        // Tab Switcher
         function switchAiTab(tabName) {
             document.querySelectorAll('.ai-tab-btn').forEach(btn => {
                 btn.classList.remove('active', 'bg-white', 'text-brand-700', 'shadow-sm');
@@ -437,7 +455,7 @@
         function getDatasetContextSummary() {
             if (!currentSheetData || currentSheetData.length === 0) return "";
             const keys = Object.keys(currentSheetData[0]);
-            const sampleRows = currentSheetData.slice(0, 15);
+            const sampleRows = currentSheetData.slice(0, 20);
             return JSON.stringify({
                 total_records: currentSheetData.length,
                 columns: keys,
@@ -445,7 +463,6 @@
             }, null, 2);
         }
 
-        // Feature 1: Gemini Deep Analysis (gemini-3-flash-preview)
         async function generateGeminiDeepAnalysis() {
             const outputDiv = document.getElementById('deepAnalysisOutput');
             const btn = document.getElementById('btnRunDeepAnalysis');
@@ -461,26 +478,23 @@
             outputDiv.innerHTML = `
                 <div class="flex items-center justify-center py-8 text-brand-600 gap-3">
                     <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
-                    <span>O Gemini está analisando os padrões, calculando tendências e gerando o relatório...</span>
+                    <span>Analisando dados operacionais com Gemini...</span>
                 </div>
             `;
             lucide.createIcons();
 
             const datasetSummary = getDatasetContextSummary();
-            const systemPrompt = "Você é um Analista de Dados e Cientista de Negócios Sênior. Forneça um relatório executivo claro, objetivo, em português do Brasil, usando formatação Markdown (títulos ##, tópicos -, negrito **). Seja perspicaz, identifique anomalias, oportunidades de negócios e recomende decisões baseadas nos dados fornecidos.";
-            
-            const userPrompt = `Analise detalhadamente a seguinte amostra de planilha:\n\n${datasetSummary}\n\nForneça:\n1. ## Resumo Executivo & Principais Constatações\n2. ## Destaques Estatísticos & Desempenho por Categoria\n3. ## Pontos de Atenção ou Anomalias nos Dados\n4. ## Recomendações Estratégicas para Tomada de Decisão`;
+            const prompt = `Faça uma análise executiva detalhada e profunda sobre os dados operacionais a seguir:\n\n${datasetSummary}\n\nIdentifique os órgãos com maior/menor volume de movimentos, tendências ao longo dos meses, ocorrências marcantes e observações estratégicas. Organize em seções formatadas em Markdown com títulos e tópicos legíveis.`;
 
             const apiKey = getApiKey();
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
             const payload = {
-                contents: [{ parts: [{ text: userPrompt }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] }
+                contents: [{ parts: [{ text: prompt }] }]
             };
 
             if (useGrounding) {
-                payload.tools = [{ "google_search": {} }];
+                payload.tools = [{ googleSearch: {} }];
             }
 
             try {
@@ -496,7 +510,6 @@
                 if (candidate && candidate.content?.parts?.[0]?.text) {
                     let markdownText = candidate.content.parts[0].text;
                     
-                    // Render sources if grounding was enabled
                     let sourcesHtml = "";
                     const groundingMetadata = candidate.groundingMetadata;
                     if (groundingMetadata && groundingMetadata.groundingAttributions) {
@@ -522,13 +535,9 @@
             }
         }
 
-        // Feature 2: Conversar com Dados (gemini-3-flash-preview)
-        let chatHistoryData = [];
-
         async function sendDataChatQuery() {
             const inputEl = document.getElementById('chatInputPrompt');
             const historyBox = document.getElementById('chatHistoryBox');
-            const btn = document.getElementById('btnSendChat');
             const question = inputEl.value.trim();
 
             if (!question) return;
@@ -537,7 +546,6 @@
                 return;
             }
 
-            // Append user question
             historyBox.innerHTML += `
                 <div class="flex justify-end">
                     <div class="bg-brand-600 text-white p-3 rounded-xl max-w-md shadow-sm">
@@ -548,7 +556,6 @@
             inputEl.value = '';
             historyBox.scrollTop = historyBox.scrollHeight;
 
-            // Loading state
             const loadingId = 'loading-' + Date.now();
             historyBox.innerHTML += `
                 <div id="${loadingId}" class="flex justify-start">
@@ -562,7 +569,7 @@
             historyBox.scrollTop = historyBox.scrollHeight;
 
             const datasetSummary = getDatasetContextSummary();
-            const promptWithContext = `O usuário está fazendo uma pergunta sobre a seguinte planilha:\n\n${datasetSummary}\n\nPergunta do usuário: "${question}"\n\nResponda de maneira direta, precisa e amigável em português do Brasil.`;
+            const promptWithContext = `O usuário está fazendo uma pergunta sobre a seguinte planilha de dados:\n\n${datasetSummary}\n\nPergunta do usuário: "${question}"\n\nResponda de maneira direta, precisa e amigável em português do Brasil.`;
 
             const apiKey = getApiKey();
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
@@ -602,7 +609,6 @@
             }
         }
 
-        // Feature 3: Resumo em Áudio TTS (gemini-2.5-flash-preview-tts)
         function base64ToArrayBuffer(base64) {
             const binaryString = window.atob(base64);
             const len = binaryString.length;
@@ -664,8 +670,7 @@
             btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Sintetizando Voz...`;
             lucide.createIcons();
 
-            const datasetSummary = getDatasetContextSummary();
-            const textToSay = `Resumo em áudio da planilha: Esta aba possui ${currentSheetData.length} registros e ${Object.keys(currentSheetData[0]).length} colunas. Destaques principais gerados com inteligência artificial para sua apresentação executiva.`;
+            const textToSay = `Resumo executivo da planilha: Esta aba possui ${currentSheetData.length} registros e ${Object.keys(currentSheetData[0]).length} colunas. Análise estruturada com inteligência artificial organizando dados por Órgãos e Períodos temporais.`;
 
             const apiKey = getApiKey();
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
@@ -720,7 +725,6 @@
             }
         }
 
-        // Feature 4: Gerador de Infográficos Visuais (imagen-4.0-generate-001)
         async function generateInfographic() {
             const btn = document.getElementById('btnGenerateInfographic');
             const displayArea = document.getElementById('infographicDisplayArea');
@@ -741,7 +745,7 @@
             lucide.createIcons();
 
             const keys = Object.keys(currentSheetData[0]).slice(0, 4).join(', ');
-            const imagePrompt = `A clean, modern, high-tech business data infographic presentation slide summarizing data metrics (${keys}), glowing vector elements, professional corporate design, minimal futuristic charts, high resolution 4k graphic design`;
+            const imagePrompt = `A clean, modern, high-tech business and government data infographic presentation slide summarizing data metrics (${keys}), glowing vector elements, professional corporate design, minimal futuristic charts, high resolution 4k graphic design`;
 
             const apiKey = getApiKey();
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
@@ -782,11 +786,11 @@
             }
         }
 
-        // Existing functions ...
         let currentWorkbook = null;
         let currentSheetData = [];
         let chartInstance1 = null;
         let chartInstance2 = null;
+        let detectedOrgaoKey = null;
 
         // Elements
         const dropzone = document.getElementById('dropzoneSection');
@@ -795,6 +799,7 @@
         const sheetSelect = document.getElementById('sheetSelect');
         const selectX = document.getElementById('selectX');
         const selectY = document.getElementById('selectY');
+        const selectFilterOrgao = document.getElementById('selectFilterOrgao');
         const selectChartType = document.getElementById('selectChartType');
 
         // Initialize icons
@@ -824,22 +829,35 @@
             }
         });
 
-        // Sample Data Button
         document.getElementById('btnSample').addEventListener('click', () => {
-            const sampleData = [
-                { "Categoria": "Eletrônicos", "Região": "Sudeste", "Vendas": 45000, "Unidades": 120, "Margem (%)": 24 },
-                { "Categoria": "Roupas & Moda", "Região": "Sul", "Vendas": 28000, "Unidades": 340, "Margem (%)": 35 },
-                { "Categoria": "Alimentos", "Região": "Nordeste", "Vendas": 62000, "Unidades": 890, "Margem (%)": 18 },
-                { "Categoria": "Móveis", "Região": "Centro-Oeste", "Vendas": 31000, "Unidades": 65, "Margem (%)": 28 },
-                { "Categoria": "Cosméticos", "Região": "Sudeste", "Vendas": 19500, "Unidades": 210, "Margem (%)": 42 },
-                { "Categoria": "Esportes", "Região": "Norte", "Vendas": 15000, "Unidades": 95, "Margem (%)": 22 }
-            ];
+            const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const orgaos = ["CINDACTA I", "CINDACTA II", "CINDACTA III", "CINDACTA IV", "CRCEA-SE"];
             
-            document.getElementById('fileNameText').innerText = "dados_exemplo_vendas.ods";
-            processRawJson(sampleData, "Vendas por Categoria");
+            const sampleData = [];
+
+            orgaos.forEach((orgao, oIdx) => {
+                meses.forEach((mes, mIdx) => {
+                    const factor = (oIdx + 1) * 10;
+                    sampleData.push({
+                        "Órgão": orgao,
+                        "Mês": mes,
+                        "Movimentos": Math.floor(1200 + Math.random() * 800 + factor * 5),
+                        "Incidente": Math.floor(Math.random() * 8),
+                        "RI": Math.floor(Math.random() * 5),
+                        "RA": Math.floor(Math.random() * 4),
+                        "Coordenação": Math.floor(15 + Math.random() * 25),
+                        "Planejamento": Math.floor(10 + Math.random() * 20),
+                        "Supervisão": Math.floor(20 + Math.random() * 30),
+                        "Habilidade": Math.floor(5 + Math.random() * 15),
+                        "Ocorrência": Math.floor(Math.random() * 10)
+                    });
+                });
+            });
+            
+            document.getElementById('fileNameText').innerText = "movimento_nadso_sigcea.ods";
+            processRawJson(sampleData, "Movimento NADSO SIGCEA");
         });
 
-        // Handle Upload File
         function handleFile(file) {
             document.getElementById('fileNameText').innerText = file.name;
             const reader = new FileReader();
@@ -848,7 +866,6 @@
                 const data = new Uint8Array(e.target.result);
                 currentWorkbook = XLSX.read(data, { type: 'array' });
 
-                // Populate Sheets Selector
                 sheetSelect.innerHTML = '';
                 currentWorkbook.SheetNames.forEach(sheetName => {
                     const opt = document.createElement('option');
@@ -863,7 +880,6 @@
             reader.readAsArrayBuffer(file);
         }
 
-        // Sheet Select Change
         sheetSelect.addEventListener('change', (e) => {
             loadSheet(e.target.value);
         });
@@ -872,6 +888,28 @@
             const worksheet = currentWorkbook.Sheets[sheetName];
             const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
             processRawJson(json, sheetName);
+        }
+
+        // Helper regex matching functions
+        function isOrgaoKey(keyName) {
+            return /órgão|orgao|organ|unidade|secretaria|entidade|governo|ministério|ministerio|autarquia|pasta/i.test(keyName);
+        }
+
+        function isTimeKey(keyName) {
+            return /ano|mês|mes|data|periodo|período|exercicio|exercício|trimestre|semestre/i.test(keyName);
+        }
+
+        function populateFilterOrgaoDropdown() {
+            selectFilterOrgao.innerHTML = '<option value="ALL">Todos os Órgãos</option>';
+            if (!detectedOrgaoKey || !currentSheetData) return;
+
+            const uniqueOrgaos = [...new Set(currentSheetData.map(r => String(r[detectedOrgaoKey] || '')).filter(Boolean))].sort();
+            uniqueOrgaos.forEach(orgao => {
+                const opt = document.createElement('option');
+                opt.value = orgao;
+                opt.textContent = orgao;
+                selectFilterOrgao.appendChild(opt);
+            });
         }
 
         function processRawJson(json, sheetName) {
@@ -885,154 +923,196 @@
 
             document.getElementById('fileMetaText').innerText = `${json.length} registros • ${keys.length} colunas (${sheetName})`;
 
-            // Populate Select Controls for Axis
-            selectX.innerHTML = '<option value="">Eixo X (Categorias)</option>';
-            selectY.innerHTML = '<option value="">Eixo Y (Valores)</option>';
+            let timeKeys = keys.filter(k => isTimeKey(k));
+            let orgaoKeys = keys.filter(k => isOrgaoKey(k));
+            let metricKeys = keys.filter(k => !isTimeKey(k) && !isOrgaoKey(k));
 
-            let numericKeys = [];
-            let textKeys = [];
+            detectedOrgaoKey = orgaoKeys[0] || keys.find(k => isOrgaoKey(k)) || "Órgão";
 
-            keys.forEach(k => {
-                const sampleVal = json.find(r => r[k] !== "" && r[k] !== null)?.[k];
-                const isNum = typeof sampleVal === 'number' || (!isNaN(parseFloat(sampleVal)) && isFinite(sampleVal));
-                
-                const optX = document.createElement('option');
-                optX.value = k;
-                optX.textContent = k;
-                selectX.appendChild(optX);
+            // Populate Eixo X (Meses)
+            selectX.innerHTML = '';
+            if (timeKeys.length > 0) {
+                timeKeys.forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = k;
+                    opt.textContent = k;
+                    selectX.appendChild(opt);
+                });
+            } else {
+                keys.forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = k;
+                    opt.textContent = k;
+                    selectX.appendChild(opt);
+                });
+            }
 
+            // Populate Eixo Y (Metrics)
+            selectY.innerHTML = '';
+            metricKeys.forEach(k => {
                 const optY = document.createElement('option');
                 optY.value = k;
                 optY.textContent = k;
                 selectY.appendChild(optY);
-
-                if (isNum) numericKeys.push(k);
-                else textKeys.push(k);
             });
 
-            // Auto Select Defaults
-            selectX.value = textKeys[0] || keys[0];
-            selectY.value = numericKeys[0] || keys[1] || keys[0];
+            populateFilterOrgaoDropdown();
 
-            // Show Dashboard
+            selectX.value = timeKeys[0] || keys[0];
+            selectY.value = metricKeys.includes("Movimentos") ? "Movimentos" : (metricKeys[0] || keys[0]);
+
             dashboardArea.classList.remove('hidden');
 
-            // Render Components
-            renderKpis(keys, numericKeys);
+            renderKpis(keys, metricKeys);
             renderCharts();
             renderTable();
-            generateAiSummary(numericKeys);
+            generateAiSummary(metricKeys);
 
             lucide.createIcons();
         }
 
-        // Render KPI Cards
-        function renderKpis(allKeys, numericKeys) {
+        function renderKpis(keys, metricKeys) {
             const kpiGrid = document.getElementById('kpiGrid');
             kpiGrid.innerHTML = '';
 
-            // Card 1: Total Records
-            kpiGrid.appendChild(createKpiCard("Total de Registros", currentSheetData.length.toLocaleString('pt-BR'), "list-filter", "border-indigo-500", "bg-indigo-50 text-indigo-600"));
+            const totalRows = currentSheetData.length;
 
-            // Card 2: Number of Fields
-            kpiGrid.appendChild(createKpiCard("Total de Colunas", allKeys.length, "columns", "border-blue-500", "bg-blue-50 text-blue-600"));
-
-            // Cards for top 2 numeric columns
-            numericKeys.slice(0, 2).forEach((numKey, idx) => {
-                const totalSum = currentSheetData.reduce((acc, curr) => acc + (parseFloat(curr[numKey]) || 0), 0);
-                const avg = totalSum / currentSheetData.length;
-                
-                const formattedVal = totalSum > 1000 ? totalSum.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : totalSum.toFixed(2);
-                
-                const colorClass = idx === 0 ? "border-emerald-500" : "border-amber-500";
-                const bgClass = idx === 0 ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600";
-                
-                kpiGrid.appendChild(createKpiCard(`Soma: ${numKey}`, formattedVal, "calculator", colorClass, bgClass, `Média: ${avg.toFixed(2)}`));
-            });
-        }
-
-        function createKpiCard(title, value, icon, borderColor, iconStyle, subtitle = "") {
-            const div = document.createElement('div');
-            div.className = `glass-panel p-5 rounded-2xl border-l-4 ${borderColor} shadow-sm flex items-center justify-between`;
-            div.innerHTML = `
-                <div>
-                    <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">${title}</p>
-                    <p class="text-2xl font-bold text-slate-900 mt-1">${value}</p>
-                    ${subtitle ? `<p class="text-xs text-slate-500 mt-1">${subtitle}</p>` : ''}
-                </div>
-                <div class="p-3 rounded-xl ${iconStyle}">
-                    <i data-lucide="${icon}" class="w-6 h-6"></i>
+            kpiGrid.innerHTML += `
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-slate-200">
+                    <div class="p-3 bg-brand-100 text-brand-600 rounded-xl">
+                        <i data-lucide="database" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Total de Registros</p>
+                        <h4 class="text-xl font-bold text-slate-900">${totalRows.toLocaleString('pt-BR')}</h4>
+                    </div>
                 </div>
             `;
-            return div;
+
+            let orgaosCount = 0;
+            if (detectedOrgaoKey) {
+                orgaosCount = new Set(currentSheetData.map(r => r[detectedOrgaoKey])).size;
+            }
+            kpiGrid.innerHTML += `
+                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-slate-200">
+                    <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
+                        <i data-lucide="building-2" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Órgãos Analisados</p>
+                        <h4 class="text-xl font-bold text-slate-900">${orgaosCount || 1}</h4>
+                    </div>
+                </div>
+            `;
+
+            const primaryMetric = metricKeys.includes("Movimentos") ? "Movimentos" : (metricKeys[0] || keys[0]);
+            const secondaryMetric = metricKeys.includes("Ocorrência") ? "Ocorrência" : (metricKeys[1] || keys[1]);
+
+            if (primaryMetric) {
+                const sumPrimary = currentSheetData.reduce((acc, r) => acc + (parseFloat(r[primaryMetric]) || 0), 0);
+                kpiGrid.innerHTML += `
+                    <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-slate-200">
+                        <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
+                            <i data-lucide="activity" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 font-medium">Total (${primaryMetric})</p>
+                            <h4 class="text-xl font-bold text-slate-900">${sumPrimary.toLocaleString('pt-BR')}</h4>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (secondaryMetric) {
+                const sumSecondary = currentSheetData.reduce((acc, r) => acc + (parseFloat(r[secondaryMetric]) || 0), 0);
+                kpiGrid.innerHTML += `
+                    <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-slate-200">
+                        <div class="p-3 bg-amber-100 text-amber-600 rounded-xl">
+                            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 font-medium">Total (${secondaryMetric})</p>
+                            <h4 class="text-xl font-bold text-slate-900">${sumSecondary.toLocaleString('pt-BR')}</h4>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
-        // Render Charts
         function renderCharts() {
             const xKey = selectX.value;
             const yKey = selectY.value;
+            const selectedOrgao = selectFilterOrgao.value;
             const chartType = selectChartType.value;
 
-            if (!xKey || !yKey) return;
+            if (!xKey || !yKey || !currentSheetData) return;
 
-            // Grouping data for chart
-            const labels = [];
-            const dataValues = [];
+            let filteredData = currentSheetData;
+            if (selectedOrgao && selectedOrgao !== 'ALL' && detectedOrgaoKey) {
+                filteredData = currentSheetData.filter(r => String(r[detectedOrgaoKey]) === String(selectedOrgao));
+            }
 
             const map = new Map();
-            currentSheetData.forEach(row => {
-                const label = String(row[xKey] || 'N/A');
+            filteredData.forEach(row => {
+                const label = String(row[xKey] !== undefined && row[xKey] !== null ? row[xKey] : 'N/A');
                 const val = parseFloat(row[yKey]) || 0;
                 map.set(label, (map.get(label) || 0) + val);
             });
 
-            map.forEach((v, k) => {
-                labels.push(k);
-                dataValues.push(v);
+            const monthOrder = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            
+            let sortedEntries = Array.from(map.entries());
+            sortedEntries.sort((a, b) => {
+                let idxA = monthOrder.findIndex(m => m.toLowerCase() === a[0].toLowerCase());
+                let idxB = monthOrder.findIndex(m => m.toLowerCase() === b[0].toLowerCase());
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                return 0;
             });
+
+            const labels = sortedEntries.map(e => e[0]);
+            const dataValues = sortedEntries.map(e => e[1]);
 
             const colors = [
                 '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', 
-                '#06b6d4', '#f97316', '#64748b', '#84cc16', '#3b82f6'
+                '#06b6d4', '#f97316', '#64748b', '#84cc16', '#3b82f6', '#0284c7', '#d97706'
             ];
 
-            // Destroy existing charts
             if (chartInstance1) chartInstance1.destroy();
             if (chartInstance2) chartInstance2.destroy();
 
-            // Main Chart
             const ctx1 = document.getElementById('mainChart').getContext('2d');
             chartInstance1 = new Chart(ctx1, {
                 type: chartType,
                 data: {
-                    labels: labels.slice(0, 15),
+                    labels: labels,
                     datasets: [{
-                        label: `${yKey} por ${xKey}`,
-                        data: dataValues.slice(0, 15),
-                        backgroundColor: chartType === 'line' ? 'rgba(99, 102, 241, 0.2)' : colors,
+                        label: `${yKey} ${selectedOrgao !== 'ALL' ? `[${selectedOrgao}]` : '(Todos os Órgãos)'}`,
+                        data: dataValues,
+                        backgroundColor: chartType === 'line' ? 'rgba(99, 102, 241, 0.15)' : colors,
                         borderColor: '#4f46e5',
                         borderWidth: 2,
                         fill: chartType === 'line',
-                        tension: 0.3
+                        tension: 0.35,
+                        pointBackgroundColor: '#4338ca',
+                        pointRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: ['pie', 'doughnut'].includes(chartType) }
+                        legend: { display: true, position: 'top' }
                     }
                 }
             });
 
-            // Secondary Chart (Proportions)
             const ctx2 = document.getElementById('secondaryChart').getContext('2d');
             chartInstance2 = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
-                    labels: labels.slice(0, 6),
+                    labels: labels.slice(0, 12),
                     datasets: [{
-                        data: dataValues.slice(0, 6),
+                        data: dataValues.slice(0, 12),
                         backgroundColor: colors
                     }]
                 },
@@ -1040,7 +1120,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
                     }
                 }
             });
@@ -1049,9 +1129,9 @@
         // Event listeners for chart controls
         selectX.addEventListener('change', renderCharts);
         selectY.addEventListener('change', renderCharts);
+        selectFilterOrgao.addEventListener('change', renderCharts);
         selectChartType.addEventListener('change', renderCharts);
 
-        // Render Data Table
         function renderTable() {
             const tableHead = document.getElementById('tableHead');
             const tableBody = document.getElementById('tableBody');
@@ -1059,10 +1139,8 @@
 
             const keys = Object.keys(currentSheetData[0] || {});
 
-            // Header
             tableHead.innerHTML = `<tr>${keys.map(k => `<th class="px-4 py-3">${k}</th>`).join('')}</tr>`;
 
-            // Function to filter & display rows
             const filterAndDisplay = () => {
                 const query = searchInput.value.toLowerCase();
                 const filtered = currentSheetData.filter(row => 
@@ -1093,13 +1171,15 @@
             const maxVal = Math.max(...values);
             const minVal = Math.min(...values);
             const sumVal = values.reduce((a, b) => a + b, 0);
-            const avgVal = sumVal / values.length;
+            const avgVal = values.length ? sumVal / values.length : 0;
+
+            const orgaoMsg = detectedOrgaoKey ? `• <b>Órgão Principal Detectado:</b> Campo <b>"${detectedOrgaoKey}"</b> categorizado automaticamente.<br>` : '';
 
             aiText.innerHTML = `
                 <div class="space-y-2">
-                    <p>• <b>Análise Preliminar (${key}):</b> O valor acumulado nesta aba é de <b>${sumVal.toLocaleString('pt-BR', {maximumFractionDigits: 2})}</b>, com uma média de <b>${avgVal.toFixed(2)}</b> por registro.</p>
+                    <p>${orgaoMsg}• <b>Análise Preliminar (${key}):</b> O valor acumulado nesta aba é de <b>${sumVal.toLocaleString('pt-BR')}</b>, com média de <b>${avgVal.toFixed(2)}</b> por registro.</p>
                     <p>• <b>Intervalo de Valores:</b> Pico máximo de <b>${maxVal.toLocaleString('pt-BR')}</b> e valor mínimo de <b>${minVal.toLocaleString('pt-BR')}</b>.</p>
-                    <p class="text-brand-600 font-medium pt-2">💡 Clique no botão <b>"Gerar Análise Profunda com IA"</b> acima para disparar o agente Gemini para um relatório estatístico e estratégico completo!</p>
+                    <p class="text-brand-600 font-medium pt-2">💡 Clique no botão <b>"Gerar Análise Profunda com IA"</b> acima para disparar o agente Gemini para um relatório estatístico por órgão e temporalidade!</p>
                 </div>
             `;
         }
