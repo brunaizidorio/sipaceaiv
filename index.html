@@ -3,1186 +3,917 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard & Analisador Visual de Planilhas</title>
-    <!-- Tailwind CSS -->
+    <title>SIPACEA - Painel de Acompanhamento PFO</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js para Gráficos Visuais -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS para ler ODS, XLSX, CSV localmente no navegador -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Marked.js para renderizar respostas da IA em Markdown -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f3ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#312e81'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0f172a; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.06); }
+        .tab-active { border-bottom: 3px solid #38bdf8; color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
+        .card-hover:hover { background: rgba(30, 41, 59, 0.6); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .badge { padding: 2px 10px; border-radius: 9999px; font-size: 10px; font-weight: 700; }
+        .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .badge-yellow { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .badge-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+        input, select, textarea {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #e2e8f0;
+            width: 100%;
+            font-size: 13px;
+            transition: border-color 0.2s;
         }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+        }
+        .btn-primary { background: #0284c7; color: white; padding: 10px 24px; border-radius: 12px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-primary:hover { background: #0369a1; transform: scale(1.02); }
+        .btn-success { background: #059669; color: white; padding: 10px 24px; border-radius: 12px; font-weight: 600; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-success:hover { background: #047857; transform: scale(1.02); }
+        .btn-danger { background: #dc2626; color: white; padding: 8px 14px; border-radius: 10px; font-size: 12px; transition: all 0.2s; border: none; cursor: pointer; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-outline { background: transparent; color: #94a3b8; padding: 8px 16px; border-radius: 10px; border: 1px solid #334155; transition: all 0.2s; cursor: pointer; }
+        .btn-outline:hover { background: #1e293b; color: white; }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            padding: 32px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .stat-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+        .stat-card:hover { border-color: #334155; }
+        .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #1e293b; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #0f172a; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 14px 16px; text-align: left; }
+        td { padding: 12px 16px; border-bottom: 1px solid #1e293b; }
+        tr:hover td { background: rgba(30, 41, 59, 0.4); }
+        .tab-bar { display: flex; gap: 4px; overflow-x: auto; padding: 0 4px; }
+        .tab-btn { padding: 12px 20px; border: none; background: transparent; color: #94a3b8; font-weight: 600; font-size: 12px; border-bottom: 3px solid transparent; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+        .tab-btn:hover { color: #e2e8f0; }
+        .tab-btn.active { border-bottom-color: #38bdf8; color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body>
 
-    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <!-- HEADER -->
+    <header class="glass sticky top-0 z-50 border-b border-slate-800/50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-3">
-                <div class="p-2 bg-brand-600 rounded-lg text-white">
-                    <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+                <div class="bg-sky-600 p-3 rounded-xl shadow-lg shadow-sky-600/20">
+                    <i class="fa-solid fa-plane-shield text-white text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight">DataViz Studio</h1>
-                    <p class="text-xs text-slate-400">Analisador e Dashboard Visual de Planilhas (.ods / .xlsx)</p>
+                    <h1 class="text-xl font-bold text-white">SIPACEA <span class="text-xs text-sky-400 font-normal ml-2">MCA 63-16</span></h1>
+                    <p class="text-xs text-slate-400">Painel de Pesquisas de Fatores Operacionais</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <button id="btnSample" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-2 rounded-lg transition flex items-center gap-2 border border-slate-700">
-                    <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
-                    Carregar Dados de Exemplo
-                </button>
-                <button id="btnApiKey" onclick="openApiKeyModal()" class="text-xs bg-brand-600/20 hover:bg-brand-600/30 text-brand-300 border border-brand-500/30 px-3 py-2 rounded-lg transition flex items-center gap-1.5">
-                    <i data-lucide="key" class="w-3.5 h-3.5 text-brand-400"></i>
-                    <span id="apiKeyStatusText">Chave Gemini IA</span>
+                <span class="text-xs text-emerald-400 bg-emerald-950/50 px-3 py-1.5 rounded-full border border-emerald-500/20 flex items-center gap-2">
+                    <i class="fa-solid fa-shield-check"></i> Política Não-Punitiva
+                </span>
+                <button onclick="exportarDados()" class="btn-outline text-xs flex items-center gap-2">
+                    <i class="fa-solid fa-download"></i> Exportar
                 </button>
             </div>
         </div>
     </header>
 
-    <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-4">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-100">
-                <h3 class="font-bold text-slate-900 flex items-center gap-2">
-                    <i data-lucide="key" class="w-5 h-5 text-brand-600"></i>
-                    Configurar API Key Gemini
-                </h3>
-                <button onclick="closeApiKeyModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <p class="text-xs text-slate-600 leading-relaxed">
-                A aplicação utiliza a API oficial do Google Gemini. Se você possui uma chave customizada, insira-a abaixo. Caso contrário, a aplicação utilizará o ambiente padrão configurado.
-            </p>
-            <div>
-                <label for="customApiKeyInput" class="block text-xs font-semibold text-slate-700 mb-1">Gemini API Key (Opcional):</label>
-                <input type="password" id="customApiKeyInput" placeholder="AIzaSy..." class="w-full bg-slate-50 border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono focus:ring-2 focus:ring-brand-500 outline-none">
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeApiKeyModal()" class="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
-                <button onclick="saveApiKey()" class="px-4 py-2 text-xs font-medium bg-brand-600 hover:bg-brand-700 text-white rounded-lg shadow">Salvar Configuração</button>
-            </div>
+    <!-- TABS -->
+    <nav class="max-w-7xl mx-auto px-6 pt-4">
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="dashboard"><i class="fa-solid fa-chart-pie mr-2"></i>Dashboard</button>
+            <button class="tab-btn" data-tab="pfo"><i class="fa-solid fa-clipboard-list mr-2"></i>Registros PFO</button>
+            <button class="tab-btn" data-tab="fator11"><i class="fa-solid fa-arrows-rotate mr-2"></i>Fator 11</button>
+            <button class="tab-btn" data-tab="mitigacao"><i class="fa-solid fa-shield-halved mr-2"></i>Mitigações</button>
+            <button class="tab-btn" data-tab="graficos"><i class="fa-solid fa-chart-line mr-2"></i>Gráficos</button>
         </div>
-    </div>
+    </nav>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-6 py-6 space-y-6">
 
-        <!-- Dropzone Section -->
-        <section id="dropzoneSection" class="glass-panel rounded-2xl p-8 text-center border-2 border-dashed border-slate-300 hover:border-brand-500 transition cursor-pointer relative shadow-sm">
-            <input type="file" id="fileInput" accept=".ods, .xlsx, .xls, .csv" class="hidden">
-            <div class="max-w-md mx-auto flex flex-col items-center justify-center space-y-4">
-                <div class="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center text-brand-600 shadow-inner">
-                    <i data-lucide="file-up" class="w-8 h-8"></i>
+        <!-- ============================================= -->
+        <!-- TAB: DASHBOARD -->
+        <!-- ============================================= -->
+        <section id="tab-dashboard" class="tab-content active space-y-6">
+
+            <!-- KPI CARDS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="stat-card">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Total PFO</div>
+                    <div class="text-2xl font-bold text-white" id="kpi-total">0</div>
                 </div>
-                <div>
-                    <h2 class="text-xl font-bold text-slate-900">Arraste sua planilha aqui</h2>
-                    <p class="text-sm text-slate-500 mt-1">Suporta arquivos <b>.ODS</b> (LibreOffice Calc), <b>.XLSX</b> (Excel) e <b>.CSV</b></p>
+                <div class="stat-card">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Movimentos Auditados</div>
+                    <div class="text-2xl font-bold text-sky-400" id="kpi-mov">0</div>
                 </div>
-                <button onclick="document.getElementById('fileInput').click()" class="bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition shadow-md shadow-brand-500/20 flex items-center gap-2">
-                    <i data-lucide="folder-open" class="w-4 h-4"></i>
-                    Selecionar Arquivo do Computador
-                </button>
-                <p class="text-xs text-slate-400">Seu arquivo é processado 100% no seu navegador de forma segura e privada.</p>
-            </div>
-        </section>
-
-        <div id="dashboardArea" class="hidden space-y-8">
-
-            <!-- Sheet Bar & File Summary -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-panel p-4 rounded-xl">
-                <div class="flex items-center gap-3">
-                    <div class="p-2 bg-emerald-100 text-emerald-700 rounded-lg">
-                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 id="fileNameText" class="font-semibold text-slate-900 text-sm">planilha.ods</h3>
-                        <p id="fileMetaText" class="text-xs text-slate-500">0 linhas • 0 colunas</p>
-                    </div>
+                <div class="stat-card">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Erros Assinalados</div>
+                    <div class="text-2xl font-bold text-rose-400" id="kpi-erros">0</div>
                 </div>
-
-                <!-- Sheet Selector Dropdown -->
-                <div class="flex items-center gap-3">
-                    <label for="sheetSelect" class="text-xs font-medium text-slate-600">Aba ativa:</label>
-                    <select id="sheetSelect" class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </select>
+                <div class="stat-card">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Indicador Médio</div>
+                    <div class="text-2xl font-bold text-amber-400" id="kpi-indicador">0.00%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider">Órgãos Monitorados</div>
+                    <div class="text-2xl font-bold text-emerald-400" id="kpi-orgaos">0</div>
                 </div>
             </div>
 
-            <!-- Metric Cards Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpiGrid">
-                <!-- Cards Dinâmicos Gerados Via JS -->
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                <!-- Controls & Chart 1 -->
-                <div class="lg:col-span-2 glass-panel rounded-2xl p-6 space-y-4 shadow-sm">
-                    <div class="flex flex-col space-y-3 pb-4 border-b border-slate-200">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div>
-                                <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                                    <i data-lucide="line-chart" class="w-5 h-5 text-brand-600"></i>
-                                    Evolução Mensal do Movimento & Ocorrências (SIGCEA / NADSO)
-                                </h3>
-                                <p class="text-xs text-slate-500">Eixo X por Meses • Eixo Y por Métricas • Filtro por Órgão</p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <select id="selectChartType" class="bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-medium text-brand-600">
-                                    <option value="line">Linha (Evolução Temporal)</option>
-                                    <option value="bar">Barras Comparativas</option>
-                                    <option value="pie">Pizza</option>
-                                    <option value="doughnut">Rosca</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Dropdowns de Controle Específicos -->
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                            <div>
-                                <label for="selectFilterOrgao" class="block text-[11px] font-bold text-brand-700 mb-1">🏢 1. Filtrar por Órgão:</label>
-                                <select id="selectFilterOrgao" class="w-full bg-white border border-brand-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-semibold text-slate-800 shadow-sm">
-                                    <option value="ALL">Todos os Órgãos</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="selectX" class="block text-[11px] font-bold text-slate-700 mb-1">📅 2. Eixo X (Meses):</label>
-                                <select id="selectX" class="w-full bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-medium text-slate-800">
-                                    <option value="">Selecione o Mês / Período</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="selectY" class="block text-[11px] font-bold text-slate-700 mb-1">📊 3. Eixo Y (Métrica/Valor):</label>
-                                <select id="selectY" class="w-full bg-white border border-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:ring-brand-500 font-medium text-slate-800">
-                                    <option value="Movimentos">Movimentos</option>
-                                    <option value="Incidente">Incidente</option>
-                                    <option value="RI">RI (Relatório de Incidente)</option>
-                                    <option value="RA">RA (Relatório de Análise)</option>
-                                    <option value="Coordenação">Coordenação</option>
-                                    <option value="Planejamento">Planejamento</option>
-                                    <option value="Supervisão">Supervisão</option>
-                                    <option value="Habilidade">Habilidade</option>
-                                    <option value="Ocorrência">Ocorrência</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="h-80 relative w-full flex items-center justify-center">
-                        <canvas id="mainChart"></canvas>
-                    </div>
+            <!-- ÚLTIMAS PFO -->
+            <div class="glass rounded-2xl p-6 border border-slate-800">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-clock-rotate-left text-sky-400 mr-2"></i>Últimas PFO Registradas</h2>
+                    <button onclick="abrirModalPFO()" class="btn-primary text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Nova PFO
+                    </button>
                 </div>
-
-                <!-- Chart 2: Secondary Insights / Doughnut -->
-                <div class="glass-panel rounded-2xl p-6 space-y-4 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div class="pb-4 border-b border-slate-200 flex items-center justify-between">
-                            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                                <i data-lucide="pie-chart" class="w-5 h-5 text-indigo-600"></i>
-                                Proporção & Participação
-                            </h3>
-                        </div>
-                        <p class="text-xs text-slate-500 mt-2">Distribuição percentual por grupos selecionados</p>
-                    </div>
-                    <div class="h-64 relative w-full my-auto">
-                        <canvas id="secondaryChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass-panel rounded-2xl p-6 border border-brand-200 shadow-md space-y-6 bg-gradient-to-br from-white via-slate-50/50 to-brand-50/30">
-                
-                <!-- AI Suite Header & Tabs -->
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-                    <div class="flex items-center gap-3">
-                        <div class="p-2.5 bg-gradient-to-tr from-brand-600 to-indigo-600 text-white rounded-xl shadow-md">
-                            <i data-lucide="sparkles" class="w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                                DataViz Gemini AI Suite
-                                <span class="bg-brand-100 text-brand-700 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-brand-300">Gemini 3.1 & Imagen 4.0</span>
-                            </h3>
-                            <p class="text-xs text-slate-500">Agentes de Inteligência Artificial para análise profunda, diálogo, voz e geração visual</p>
-                        </div>
-                    </div>
-
-                    <!-- Navigation Tabs -->
-                    <div class="flex flex-wrap gap-1 bg-slate-200/80 p-1 rounded-xl text-xs font-medium">
-                        <button onclick="switchAiTab('deep')" id="tabBtn-deep" class="ai-tab-btn active px-3 py-1.5 rounded-lg transition bg-white text-brand-700 shadow-sm">
-                            <i data-lucide="file-text" class="w-3.5 h-3.5 inline mr-1"></i> Relatório Profundo
-                        </button>
-                        <button onclick="switchAiTab('chat')" id="tabBtn-chat" class="ai-tab-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">
-                            <i data-lucide="message-square-code" class="w-3.5 h-3.5 inline mr-1"></i> Conversar com Dados
-                        </button>
-                        <button onclick="switchAiTab('audio')" id="tabBtn-audio" class="ai-tab-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">
-                            <i data-lucide="volume-2" class="w-3.5 h-3.5 inline mr-1"></i> Áudio / Voz (TTS)
-                        </button>
-                        <button onclick="switchAiTab('infographic')" id="tabBtn-infographic" class="ai-tab-btn px-3 py-1.5 rounded-lg transition text-slate-600 hover:text-slate-900">
-                            <i data-lucide="image" class="w-3.5 h-3.5 inline mr-1"></i> Infográfico Visual
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tab Content 1: Relatório Profundo -->
-                <div id="aiTabContent-deep" class="space-y-4">
-                    <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
-                        <div class="flex items-center gap-3">
-                            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-700 font-medium">
-                                <input type="checkbox" id="chkSearchGrounding" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500 w-4 h-4">
-                                <span>Ativar Pesquisa Web Google (Grounding)</span>
-                            </label>
-                            <span class="text-[11px] text-slate-400 hidden sm:inline">| Cruza os dados com benchmark de mercado atualizado</span>
-                        </div>
-                        <button id="btnRunDeepAnalysis" onclick="generateGeminiDeepAnalysis()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition shadow flex items-center gap-2">
-                            <i data-lucide="cpu" class="w-4 h-4"></i>
-                            Gerar Análise Profunda com IA
-                        </button>
-                    </div>
-
-                    <!-- Analysis Output Container -->
-                    <div id="deepAnalysisOutput" class="bg-white rounded-xl p-5 border border-slate-200 min-h-[160px] text-xs text-slate-700 leading-relaxed space-y-3">
-                        <div class="text-center py-8 text-slate-400 space-y-2">
-                            <i data-lucide="brain" class="w-8 h-8 mx-auto stroke-1 text-slate-300"></i>
-                            <p>Clique em <b>"Gerar Análise Profunda com IA"</b> para disparar o agente analítico do Gemini.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab Content 2: Conversar com Dados -->
-                <div id="aiTabContent-chat" class="hidden space-y-4">
-                    <div id="chatHistoryBox" class="bg-white rounded-xl p-4 border border-slate-200 h-64 overflow-y-auto space-y-3 text-xs">
-                        <div class="bg-brand-50 p-3 rounded-xl text-brand-800 border border-brand-100 max-w-lg">
-                            👋 Olá! Sou seu assistente de análise de dados Gemini. Faça qualquer pergunta sobre os órgãos, anos/meses, valores ou estatísticas desta aba!
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <input type="text" id="chatInputPrompt" placeholder="Ex: Qual órgão teve maior movimento em 2024 e qual a variação mensal?" onkeydown="if(event.key==='Enter') sendDataChatQuery()" class="flex-1 bg-white border border-slate-300 text-xs rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <button id="btnSendChat" onclick="sendDataChatQuery()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium px-5 py-2.5 rounded-xl transition flex items-center gap-2">
-                            <i data-lucide="send" class="w-4 h-4"></i>
-                            Perguntar
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Tab Content 3: Resumo em Áudio (Gemini TTS API) -->
-                <div id="aiTabContent-audio" class="hidden space-y-4">
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div class="space-y-1">
-                            <h4 class="font-semibold text-slate-900 text-sm flex items-center gap-2">
-                                <i data-lucide="mic" class="w-4 h-4 text-brand-600"></i>
-                                Narração Executiva por Voz da IA
-                            </h4>
-                            <p class="text-xs text-slate-500">Gere um briefing em áudio falado sintetizado em tempo real pelo modelo <b>Gemini 2.5 Flash TTS</b>.</p>
-                        </div>
-                        <button id="btnGenerateAudio" onclick="generateAudioBriefing()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow flex items-center gap-2 whitespace-nowrap">
-                            <i data-lucide="play-circle" class="w-4 h-4"></i>
-                            Gerar e Ouvir Áudio
-                        </button>
-                    </div>
-
-                    <div id="audioPlayerContainer" class="hidden bg-white p-4 rounded-xl border border-slate-200 flex flex-col items-center justify-center space-y-3">
-                        <p class="text-xs font-medium text-slate-700 flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
-                            Áudio Sintetizado Pronto
-                        </p>
-                        <audio id="ttsAudioElement" controls class="w-full max-w-md"></audio>
-                    </div>
-                </div>
-
-                <!-- Tab Content 4: Infográfico Visual (Imagen 4.0 API) -->
-                <div id="aiTabContent-infographic" class="hidden space-y-4">
-                    <div class="bg-white p-5 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div class="space-y-1">
-                            <h4 class="font-semibold text-slate-900 text-sm flex items-center gap-2">
-                                <i data-lucide="palette" class="w-4 h-4 text-indigo-600"></i>
-                                Criador Visual de Infográfico Ilustrativo
-                            </h4>
-                            <p class="text-xs text-slate-500">Gere uma imagem conceitual/infográfico profissional baseada nos dados usando <b>Imagen 4.0</b>.</p>
-                        </div>
-                        <button id="btnGenerateInfographic" onclick="generateInfographic()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow flex items-center gap-2 whitespace-nowrap">
-                            <i data-lucide="wand-2" class="w-4 h-4"></i>
-                            Gerar Infográfico
-                        </button>
-                    </div>
-
-                    <div id="infographicDisplayArea" class="bg-white p-4 rounded-xl border border-slate-200 min-h-[220px] flex items-center justify-center">
-                        <div class="text-center text-slate-400 text-xs">
-                            <i data-lucide="image-plus" class="w-10 h-10 mx-auto stroke-1 text-slate-300 mb-2"></i>
-                            <p>O infográfico gerado pela IA aparecerá aqui em alta resolução.</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="glass-panel rounded-2xl p-6 space-y-4 shadow-sm">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
-                            <i data-lucide="table" class="w-5 h-5 text-slate-700"></i>
-                            Tabela de Dados Brutos
-                        </h3>
-                        <p class="text-xs text-slate-500">Visualize e pesquise os registros extraídos da planilha</p>
-                    </div>
-                    <div class="relative max-w-xs w-full">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
-                        <input type="text" id="searchInput" placeholder="Pesquisar registro..." class="w-full bg-white border border-slate-300 text-xs rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto rounded-xl border border-slate-200">
-                    <table class="w-full text-left text-xs text-slate-700">
-                        <thead id="tableHead" class="bg-slate-100 text-slate-900 font-semibold border-b border-slate-200">
-                            <!-- JS Cabeçalho -->
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Data</th><th>Órgão</th><th>Fator</th><th class="text-right">Mov.</th><th class="text-right">Erros</th><th class="text-right">Indicador</th><th class="text-center">Ação</th></tr>
                         </thead>
-                        <tbody id="tableBody" class="divide-y divide-slate-200 bg-white">
-                            <!-- JS Linhas -->
-                        </tbody>
+                        <tbody id="dashboard-tabela"></tbody>
                     </table>
                 </div>
             </div>
 
-        </div>
+            <!-- FATOR 11 RESUMO -->
+            <div class="glass rounded-2xl p-6 border border-slate-800">
+                <h2 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-arrows-rotate text-amber-400 mr-2"></i>Resumo Fator 11 - Passagem de Posição</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Órgão</th><th class="text-right">Erros Listados</th><th class="text-right">Erros Assinalados</th><th class="text-center">Status</th></tr>
+                        </thead>
+                        <tbody id="dashboard-fator11"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================= -->
+        <!-- TAB: REGISTROS PFO -->
+        <!-- ============================================= -->
+        <section id="tab-pfo" class="tab-content space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h2 class="text-base font-bold text-white"><i class="fa-solid fa-clipboard-list text-sky-400 mr-2"></i>Todos os Registros PFO</h2>
+                    <p class="text-xs text-slate-400">Alimente os dados das pesquisas realizadas</p>
+                </div>
+                <button onclick="abrirModalPFO()" class="btn-primary text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Nova PFO
+                </button>
+            </div>
+            <div class="glass rounded-2xl p-6 border border-slate-800">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Órgão</th>
+                                <th>Fator</th>
+                                <th>Descrição</th>
+                                <th class="text-center">Pesquisas</th>
+                                <th class="text-center">Erros Listados</th>
+                                <th class="text-center">Erros Assinalados</th>
+                                <th class="text-center">Índice</th>
+                                <th class="text-center">Indicador</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pfo-tabela"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================= -->
+        <!-- TAB: FATOR 11 -->
+        <!-- ============================================= -->
+        <section id="tab-fator11" class="tab-content space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h2 class="text-base font-bold text-white"><i class="fa-solid fa-arrows-rotate text-amber-400 mr-2"></i>Fator 11 - Passagem de Posição</h2>
+                    <p class="text-xs text-slate-400">Monitoramento obrigatório conforme MCA 63-16</p>
+                </div>
+                <button onclick="abrirModalFator11()" class="btn-success text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Registrar Fator 11
+                </button>
+            </div>
+            <div class="glass rounded-2xl p-6 border border-slate-800">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Órgão</th>
+                                <th class="text-center">Erros Listados</th>
+                                <th class="text-center">Erros Assinalados</th>
+                                <th class="text-center">Ação Mitigadora?</th>
+                                <th>Descrição</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fator11-tabela"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================= -->
+        <!-- TAB: MITIGAÇÕES -->
+        <!-- ============================================= -->
+        <section id="tab-mitigacao" class="tab-content space-y-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h2 class="text-base font-bold text-white"><i class="fa-solid fa-shield-halved text-emerald-400 mr-2"></i>Medidas Mitigadoras</h2>
+                    <p class="text-xs text-slate-400">Acompanhamento das ações corretivas (Anexo E)</p>
+                </div>
+                <button onclick="abrirModalMitigacao()" class="btn-success text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Nova Medida
+                </button>
+            </div>
+            <div class="glass rounded-2xl p-6 border border-slate-800">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Órgão</th>
+                                <th>Fator</th>
+                                <th>Medida Proposta</th>
+                                <th>Responsável</th>
+                                <th>Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mitigacao-tabela"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================= -->
+        <!-- TAB: GRÁFICOS -->
+        <!-- ============================================= -->
+        <section id="tab-graficos" class="tab-content space-y-6">
+            <div class="glass rounded-2xl p-6 border border-slate-800">
+                <h2 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-chart-column text-sky-400 mr-2"></i>Indicadores por Fator Operacional</h2>
+                <div class="h-72"><canvas id="chartFatores"></canvas></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass rounded-2xl p-6 border border-slate-800">
+                    <h2 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i>Evolução Temporal</h2>
+                    <div class="h-64"><canvas id="chartEvolucao"></canvas></div>
+                </div>
+                <div class="glass rounded-2xl p-6 border border-slate-800">
+                    <h2 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-chart-pie text-amber-400 mr-2"></i>Distribuição por Órgão</h2>
+                    <div class="h-64"><canvas id="chartOrgaos"></canvas></div>
+                </div>
+            </div>
+        </section>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500">
-            DataViz Studio • Dashboard visual interativo pronto para apresentações e relatórios.
+    <!-- ============================================= -->
+    <!-- MODAL: NOVA PFO -->
+    <!-- ============================================= -->
+    <div id="modal-pfo" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-clipboard-list text-sky-400 mr-2"></i>Registrar PFO</h3>
+                <button onclick="fecharModal('modal-pfo')" class="text-slate-400 hover:text-white text-xl">×</button>
+            </div>
+            <form id="form-pfo" onsubmit="salvarPFO(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Data da Pesquisa</label>
+                    <input type="date" id="pfo-data" required>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Órgão ATS</label>
+                    <select id="pfo-orgao" required>
+                        <option value="">Selecione...</option>
+                        <option value="TWR-BE">TWR-BE</option>
+                        <option value="APP-BE">APP-BE</option>
+                        <option value="ACC-AZ">ACC-AZ</option>
+                        <option value="APP-MN">APP-MN</option>
+                        <option value="TWR-EG">TWR-EG</option>
+                        <option value="APP-EG">APP-EG</option>
+                        <option value="ACC-BS">ACC-BS</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Fator Operacional</label>
+                    <select id="pfo-fator" required>
+                        <option value="">Selecione...</option>
+                        <option value="01 - Coordenação e Transferência">01 - Coordenação e Transferência</option>
+                        <option value="02 - Fraseologia">02 - Fraseologia</option>
+                        <option value="03 - Proficiência em Inglês">03 - Proficiência em Inglês</option>
+                        <option value="04 - Procedimentos ATS - ACC">04 - Procedimentos ATS - ACC</option>
+                        <option value="05 - Procedimentos ATS - APP">05 - Procedimentos ATS - APP</option>
+                        <option value="06 - Procedimentos ATS - TWR">06 - Procedimentos ATS - TWR</option>
+                        <option value="07 - Autorização ATC">07 - Autorização ATC</option>
+                        <option value="08 - Vigilância RADAR">08 - Vigilância RADAR</option>
+                        <option value="09 - Separação de Aeronaves">09 - Separação de Aeronaves</option>
+                        <option value="10 - Transferência Automática">10 - Transferência Automática</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Descrição do Fator</label>
+                    <input type="text" id="pfo-descricao" placeholder="Ex: Erros de fraseologia nas comunicações" required>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Qtd Pesquisas</label>
+                        <input type="number" id="pfo-pesquisas" min="1" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Erros Listados</label>
+                        <input type="number" id="pfo-erros-listados" min="0" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Erros Assinalados</label>
+                        <input type="number" id="pfo-erros-assinalados" min="0" required>
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="fecharModal('modal-pfo')" class="btn-outline flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Salvar PFO</button>
+                </div>
+            </form>
         </div>
-    </footer>
+    </div>
 
+    <!-- ============================================= -->
+    <!-- MODAL: FATOR 11 -->
+    <!-- ============================================= -->
+    <div id="modal-fator11" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-arrows-rotate text-amber-400 mr-2"></i>Registrar Fator 11</h3>
+                <button onclick="fecharModal('modal-fator11')" class="text-slate-400 hover:text-white text-xl">×</button>
+            </div>
+            <form id="form-fator11" onsubmit="salvarFator11(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Data</label>
+                    <input type="date" id="f11-data" required>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Órgão ATS</label>
+                    <select id="f11-orgao" required>
+                        <option value="">Selecione...</option>
+                        <option value="TWR-BE">TWR-BE</option>
+                        <option value="APP-BE">APP-BE</option>
+                        <option value="ACC-AZ">ACC-AZ</option>
+                        <option value="APP-MN">APP-MN</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Erros Listados</label>
+                        <input type="number" id="f11-listados" min="0" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Erros Assinalados</label>
+                        <input type="number" id="f11-assinalados" min="0" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Ação Mitigadora?</label>
+                    <select id="f11-mitigacao" required>
+                        <option value="Não">Não</option>
+                        <option value="Sim">Sim</option>
+                    </select>
+                </div>
+                <div id="f11-desc-group">
+                    <label class="text-xs text-slate-400 block mb-1">Descrição da Ação</label>
+                    <input type="text" id="f11-desc" placeholder="Ex: Reforço no checklist de passagem">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="fecharModal('modal-fator11')" class="btn-outline flex-1">Cancelar</button>
+                    <button type="submit" class="btn-success flex-1">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- MODAL: MITIGAÇÃO -->
+    <!-- ============================================= -->
+    <div id="modal-mitigacao" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-shield-halved text-emerald-400 mr-2"></i>Nova Medida Mitigadora</h3>
+                <button onclick="fecharModal('modal-mitigacao')" class="text-slate-400 hover:text-white text-xl">×</button>
+            </div>
+            <form id="form-mitigacao" onsubmit="salvarMitigacao(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Órgão ATS</label>
+                    <select id="mit-orgao" required>
+                        <option value="">Selecione...</option>
+                        <option value="TWR-BE">TWR-BE</option>
+                        <option value="APP-BE">APP-BE</option>
+                        <option value="ACC-AZ">ACC-AZ</option>
+                        <option value="APP-MN">APP-MN</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Fator Operacional</label>
+                    <input type="text" id="mit-fator" placeholder="Ex: Fraseologia (02)" required>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Medida Proposta</label>
+                    <input type="text" id="mit-medida" placeholder="Ex: Treinamento em simulador" required>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Responsável</label>
+                    <input type="text" id="mit-responsavel" placeholder="Ex: Cap. Fernandes" required>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Status</label>
+                    <select id="mit-status" required>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em Andamento">Em Andamento</option>
+                        <option value="Concluído">Concluído</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="fecharModal('modal-mitigacao')" class="btn-outline flex-1">Cancelar</button>
+                    <button type="submit" class="btn-success flex-1">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ============================================= -->
     <script>
-        // Global API Key Config
-        let userApiKey = localStorage.getItem('gemini_api_key') || "";
+        // ===================================================
+        // ESTADO INICIAL (ZERADO)
+        // ===================================================
+        let pfoData = [];
+        let fator11Data = [];
+        let mitigacaoData = [];
 
-        function getApiKey() {
-            return userApiKey || "";
+        // Referências dos gráficos
+        let chartFatores = null;
+        let chartEvolucao = null;
+        let chartOrgaos = null;
+
+        // ===================================================
+        // INICIALIZAÇÃO
+        // ===================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarDados();
+            atualizarDashboard();
+            atualizarTabelas();
+            renderizarGraficos();
+
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+                    setTimeout(renderizarGraficos, 100);
+                });
+            });
+
+            // Mostrar/esconder descrição da ação no Fator 11
+            document.getElementById('f11-mitigacao').addEventListener('change', function() {
+                document.getElementById('f11-desc-group').style.display = this.value === 'Sim' ? 'block' : 'none';
+            });
+            document.getElementById('f11-desc-group').style.display = 'none';
+        });
+
+        // ===================================================
+        // PERSISTÊNCIA (localStorage)
+        // ===================================================
+        function salvarDados() {
+            const dados = { pfoData, fator11Data, mitigacaoData };
+            localStorage.setItem('sipacea_dashboard', JSON.stringify(dados));
         }
 
-        function openApiKeyModal() {
-            document.getElementById('customApiKeyInput').value = userApiKey;
-            document.getElementById('apiKeyModal').classList.remove('hidden');
-        }
-
-        function closeApiKeyModal() {
-            document.getElementById('apiKeyModal').classList.add('hidden');
-        }
-
-        function saveApiKey() {
-            userApiKey = document.getElementById('customApiKeyInput').value.trim();
-            localStorage.setItem('gemini_api_key', userApiKey);
-            updateApiKeyStatus();
-            closeApiKeyModal();
-        }
-
-        function updateApiKeyStatus() {
-            const statusText = document.getElementById('apiKeyStatusText');
-            if (userApiKey) {
-                statusText.innerText = "Chave Gemini (Ativa)";
-            } else {
-                statusText.innerText = "Chave Gemini IA";
-            }
-        }
-        updateApiKeyStatus();
-
-        // Exponential Backoff Fetch Helper
-        async function fetchWithRetry(url, options, maxRetries = 3) {
-            let delay = 1000;
-            for (let i = 0; i < maxRetries; i++) {
+        function carregarDados() {
+            const raw = localStorage.getItem('sipacea_dashboard');
+            if (raw) {
                 try {
-                    const res = await fetch(url, options);
-                    if (res.ok) return res;
-                    if (res.status === 429 || res.status >= 500) {
-                        await new Promise(r => setTimeout(r, delay));
-                        delay *= 2;
-                        continue;
-                    }
-                    return res;
-                } catch (err) {
-                    if (i === maxRetries - 1) throw err;
-                    await new Promise(r => setTimeout(r, delay));
-                    delay *= 2;
-                }
+                    const dados = JSON.parse(raw);
+                    pfoData = dados.pfoData || [];
+                    fator11Data = dados.fator11Data || [];
+                    mitigacaoData = dados.mitigacaoData || [];
+                } catch(e) {}
             }
         }
 
-        function switchAiTab(tabName) {
-            document.querySelectorAll('.ai-tab-btn').forEach(btn => {
-                btn.classList.remove('active', 'bg-white', 'text-brand-700', 'shadow-sm');
-                btn.classList.add('text-slate-600');
-            });
-            const activeBtn = document.getElementById(`tabBtn-${tabName}`);
-            if (activeBtn) {
-                activeBtn.classList.add('active', 'bg-white', 'text-brand-700', 'shadow-sm');
-                activeBtn.classList.remove('text-slate-600');
-            }
+        // ===================================================
+        // MODAIS
+        // ===================================================
+        function abrirModalPFO() { document.getElementById('modal-pfo').classList.add('active'); }
+        function abrirModalFator11() { document.getElementById('modal-fator11').classList.add('active'); }
+        function abrirModalMitigacao() { document.getElementById('modal-mitigacao').classList.add('active'); }
+        function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
 
-            ['deep', 'chat', 'audio', 'infographic'].forEach(t => {
-                document.getElementById(`aiTabContent-${t}`).classList.add('hidden');
-            });
-            document.getElementById(`aiTabContent-${tabName}`).classList.remove('hidden');
-        }
-
-        // Helper to extract a summary context string of the current sheet
-        function getDatasetContextSummary() {
-            if (!currentSheetData || currentSheetData.length === 0) return "";
-            const keys = Object.keys(currentSheetData[0]);
-            const sampleRows = currentSheetData.slice(0, 20);
-            return JSON.stringify({
-                total_records: currentSheetData.length,
-                columns: keys,
-                data_sample: sampleRows
-            }, null, 2);
-        }
-
-        async function generateGeminiDeepAnalysis() {
-            const outputDiv = document.getElementById('deepAnalysisOutput');
-            const btn = document.getElementById('btnRunDeepAnalysis');
-            const useGrounding = document.getElementById('chkSearchGrounding').checked;
-
-            if (!currentSheetData || currentSheetData.length === 0) {
-                outputDiv.innerHTML = `<p class="text-rose-500">Por favor, carregue uma planilha antes de disparar a análise.</p>`;
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando IA...`;
-            outputDiv.innerHTML = `
-                <div class="flex items-center justify-center py-8 text-brand-600 gap-3">
-                    <i data-lucide="loader-2" class="w-6 h-6 animate-spin"></i>
-                    <span>Analisando dados operacionais com Gemini...</span>
-                </div>
-            `;
-            lucide.createIcons();
-
-            const datasetSummary = getDatasetContextSummary();
-            const prompt = `Faça uma análise executiva detalhada e profunda sobre os dados operacionais a seguir:\n\n${datasetSummary}\n\nIdentifique os órgãos com maior/menor volume de movimentos, tendências ao longo dos meses, ocorrências marcantes e observações estratégicas. Organize em seções formatadas em Markdown com títulos e tópicos legíveis.`;
-
-            const apiKey = getApiKey();
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }]
-            };
-
-            if (useGrounding) {
-                payload.tools = [{ googleSearch: {} }];
-            }
-
-            try {
-                const response = await fetchWithRetry(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    let markdownText = candidate.content.parts[0].text;
-                    
-                    let sourcesHtml = "";
-                    const groundingMetadata = candidate.groundingMetadata;
-                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                        const sources = groundingMetadata.groundingAttributions
-                            .map(a => ({ uri: a.web?.uri, title: a.web?.title }))
-                            .filter(s => s.uri && s.title);
-                        if (sources.length > 0) {
-                            sourcesHtml = `<div class="mt-4 pt-3 border-t border-slate-200 text-[11px] text-slate-500"><b>Fontes de Pesquisa Web:</b><ul class="list-disc pl-4 mt-1">${sources.map(s => `<li><a href="${s.uri}" target="_blank" class="text-brand-600 hover:underline">${s.title}</a></li>`).join('')}</ul></div>`;
-                        }
-                    }
-
-                    outputDiv.innerHTML = `<div class="prose prose-sm max-w-none prose-headings:text-slate-900 prose-headings:font-bold prose-p:text-slate-700">${marked.parse(markdownText)}</div>${sourcesHtml}`;
-                } else {
-                    outputDiv.innerHTML = `<p class="text-rose-600">Não foi possível extrair a resposta do Gemini. Tente novamente.</p>`;
-                }
-            } catch (err) {
-                console.error(err);
-                outputDiv.innerHTML = `<p class="text-rose-600">Erro ao comunicar com a API do Gemini: ${err.message}</p>`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="cpu" class="w-4 h-4"></i> Gerar Análise Profunda com IA`;
-                lucide.createIcons();
-            }
-        }
-
-        async function sendDataChatQuery() {
-            const inputEl = document.getElementById('chatInputPrompt');
-            const historyBox = document.getElementById('chatHistoryBox');
-            const question = inputEl.value.trim();
-
-            if (!question) return;
-            if (!currentSheetData || currentSheetData.length === 0) {
-                alert("Por favor, carregue uma planilha primeiro.");
-                return;
-            }
-
-            historyBox.innerHTML += `
-                <div class="flex justify-end">
-                    <div class="bg-brand-600 text-white p-3 rounded-xl max-w-md shadow-sm">
-                        ${question}
-                    </div>
-                </div>
-            `;
-            inputEl.value = '';
-            historyBox.scrollTop = historyBox.scrollHeight;
-
-            const loadingId = 'loading-' + Date.now();
-            historyBox.innerHTML += `
-                <div id="${loadingId}" class="flex justify-start">
-                    <div class="bg-slate-100 text-slate-600 p-3 rounded-xl flex items-center gap-2">
-                        <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-brand-600"></i>
-                        <span>Analisando planilha...</span>
-                    </div>
-                </div>
-            `;
-            lucide.createIcons();
-            historyBox.scrollTop = historyBox.scrollHeight;
-
-            const datasetSummary = getDatasetContextSummary();
-            const promptWithContext = `O usuário está fazendo uma pergunta sobre a seguinte planilha de dados:\n\n${datasetSummary}\n\nPergunta do usuário: "${question}"\n\nResponda de maneira direta, precisa e amigável em português do Brasil.`;
-
-            const apiKey = getApiKey();
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetchWithRetry(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptWithContext }] }]
-                    })
-                });
-
-                const result = await response.json();
-                const reply = result.candidates?.[0]?.content?.parts?.[0]?.text || "Desculpe, não consegui obter uma resposta válida.";
-
-                document.getElementById(loadingId)?.remove();
-
-                historyBox.innerHTML += `
-                    <div class="flex justify-start">
-                        <div class="bg-white border border-slate-200 text-slate-800 p-3 rounded-xl max-w-md shadow-sm prose prose-xs">
-                            ${marked.parse(reply)}
-                        </div>
-                    </div>
-                `;
-            } catch (err) {
-                document.getElementById(loadingId)?.remove();
-                historyBox.innerHTML += `
-                    <div class="flex justify-start">
-                        <div class="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl">
-                            Erro ao processar pergunta: ${err.message}
-                        </div>
-                    </div>
-                `;
-            } finally {
-                historyBox.scrollTop = historyBox.scrollHeight;
-            }
-        }
-
-        function base64ToArrayBuffer(base64) {
-            const binaryString = window.atob(base64);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-            return bytes.buffer;
-        }
-
-        function pcmToWav(pcmInt16Array, sampleRate) {
-            const numChannels = 1;
-            const bytesPerSample = 2;
-            const blockAlign = numChannels * bytesPerSample;
-            const byteRate = sampleRate * blockAlign;
-            const dataSize = pcmInt16Array.length * bytesPerSample;
-            const buffer = new ArrayBuffer(44 + dataSize);
-            const view = new DataView(buffer);
-
-            const writeString = (v, offset, str) => {
-                for (let i = 0; i < str.length; i++) {
-                    v.setUint8(offset + i, str.charCodeAt(i));
-                }
-            };
-
-            writeString(view, 0, 'RIFF');
-            view.setUint32(4, 36 + dataSize, true);
-            writeString(view, 8, 'WAVE');
-            writeString(view, 12, 'fmt ');
-            view.setUint32(16, 16, true);
-            view.setUint16(20, 1, true);
-            view.setUint16(22, numChannels, true);
-            view.setUint32(24, sampleRate, true);
-            view.setUint32(28, byteRate, true);
-            view.setUint16(32, blockAlign, true);
-            view.setUint16(34, 16, true);
-            writeString(view, 36, 'data');
-            view.setUint32(40, dataSize, true);
-
-            let offset = 44;
-            for (let i = 0; i < pcmInt16Array.length; i++, offset += 2) {
-                view.setInt16(offset, pcmInt16Array[i], true);
-            }
-
-            return new Blob([buffer], { type: 'audio/wav' });
-        }
-
-        async function generateAudioBriefing() {
-            const btn = document.getElementById('btnGenerateAudio');
-            const playerContainer = document.getElementById('audioPlayerContainer');
-            const audioElement = document.getElementById('ttsAudioElement');
-
-            if (!currentSheetData || currentSheetData.length === 0) {
-                alert("Por favor, carregue uma planilha antes de gerar o áudio.");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Sintetizando Voz...`;
-            lucide.createIcons();
-
-            const textToSay = `Resumo executivo da planilha: Esta aba possui ${currentSheetData.length} registros e ${Object.keys(currentSheetData[0]).length} colunas. Análise estruturada com inteligência artificial organizando dados por Órgãos e Períodos temporais.`;
-
-            const apiKey = getApiKey();
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: [{
-                    parts: [{ text: `Fale de forma clara, profissional e entusiasmada em português do Brasil: ${textToSay}` }]
-                }],
-                generationConfig: {
-                    responseModalities: ["AUDIO"],
-                    speechConfig: {
-                        voiceConfig: {
-                            prebuiltVoiceConfig: { voiceName: "Kore" }
-                        }
-                    }
-                }
-            };
-
-            try {
-                const response = await fetchWithRetry(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                const part = result?.candidates?.[0]?.content?.parts?.[0];
-                const audioData = part?.inlineData?.data;
-                const mimeType = part?.inlineData?.mimeType;
-
-                if (audioData && mimeType) {
-                    const match = mimeType.match(/rate=(\d+)/);
-                    const sampleRate = match ? parseInt(match[1], 10) : 24000;
-                    const pcmBuffer = base64ToArrayBuffer(audioData);
-                    const pcm16 = new Int16Array(pcmBuffer);
-                    const wavBlob = pcmToWav(pcm16, sampleRate);
-                    const audioUrl = URL.createObjectURL(wavBlob);
-
-                    audioElement.src = audioUrl;
-                    playerContainer.classList.remove('hidden');
-                    audioElement.play();
-                } else {
-                    alert("Não foi possível sintetizar o áudio da resposta.");
-                }
-            } catch (err) {
-                console.error(err);
-                alert(`Erro ao sintetizar áudio: ${err.message}`);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="play-circle" class="w-4 h-4"></i> Gerar e Ouvir Áudio`;
-                lucide.createIcons();
-            }
-        }
-
-        async function generateInfographic() {
-            const btn = document.getElementById('btnGenerateInfographic');
-            const displayArea = document.getElementById('infographicDisplayArea');
-
-            if (!currentSheetData || currentSheetData.length === 0) {
-                alert("Por favor, carregue uma planilha antes de gerar o infográfico.");
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Gerando Arte...`;
-            displayArea.innerHTML = `
-                <div class="text-center py-12 text-brand-600 space-y-3">
-                    <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto"></i>
-                    <p class="text-xs font-medium">O Imagen 4.0 está renderizando um infográfico profissional para os seus dados...</p>
-                </div>
-            `;
-            lucide.createIcons();
-
-            const keys = Object.keys(currentSheetData[0]).slice(0, 4).join(', ');
-            const imagePrompt = `A clean, modern, high-tech business and government data infographic presentation slide summarizing data metrics (${keys}), glowing vector elements, professional corporate design, minimal futuristic charts, high resolution 4k graphic design`;
-
-            const apiKey = getApiKey();
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
-
-            const payload = {
-                instances: [{ prompt: imagePrompt }],
-                parameters: { sampleCount: 1 }
-            };
-
-            try {
-                const response = await fetchWithRetry(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-                if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
-                    const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-                    displayArea.innerHTML = `
-                        <div class="space-y-3 w-full text-center">
-                            <img src="${imageUrl}" alt="Infográfico Gerado por IA" class="rounded-xl border border-slate-200 shadow-md max-h-[420px] mx-auto object-contain">
-                            <a href="${imageUrl}" download="infografico_dados.png" class="inline-flex items-center gap-1.5 text-xs text-brand-600 font-semibold hover:underline">
-                                <i data-lucide="download" class="w-3.5 h-3.5"></i> Baixar Infográfico em Alta Resolução
-                            </a>
-                        </div>
-                    `;
-                } else {
-                    displayArea.innerHTML = `<p class="text-xs text-rose-500">Erro ao gerar infográfico visual. Tente novamente.</p>`;
-                }
-            } catch (err) {
-                console.error(err);
-                displayArea.innerHTML = `<p class="text-xs text-rose-500">Erro ao chamar API do Imagen 4.0: ${err.message}</p>`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = `<i data-lucide="wand-2" class="w-4 h-4"></i> Gerar Infográfico`;
-                lucide.createIcons();
-            }
-        }
-
-        let currentWorkbook = null;
-        let currentSheetData = [];
-        let chartInstance1 = null;
-        let chartInstance2 = null;
-        let detectedOrgaoKey = null;
-
-        // Elements
-        const dropzone = document.getElementById('dropzoneSection');
-        const fileInput = document.getElementById('fileInput');
-        const dashboardArea = document.getElementById('dashboardArea');
-        const sheetSelect = document.getElementById('sheetSelect');
-        const selectX = document.getElementById('selectX');
-        const selectY = document.getElementById('selectY');
-        const selectFilterOrgao = document.getElementById('selectFilterOrgao');
-        const selectChartType = document.getElementById('selectChartType');
-
-        // Initialize icons
-        lucide.createIcons();
-
-        // Drag & Drop events
-        dropzone.addEventListener('dragover', (e) => {
+        // ===================================================
+        // SALVAR PFO
+        // ===================================================
+        function salvarPFO(e) {
             e.preventDefault();
-            dropzone.classList.add('border-brand-500', 'bg-brand-50/50');
-        });
+            const data = document.getElementById('pfo-data').value;
+            const orgao = document.getElementById('pfo-orgao').value;
+            const fator = document.getElementById('pfo-fator').value;
+            const descricao = document.getElementById('pfo-descricao').value;
+            const pesquisas = parseInt(document.getElementById('pfo-pesquisas').value);
+            const listados = parseInt(document.getElementById('pfo-erros-listados').value);
+            const assinalados = parseInt(document.getElementById('pfo-erros-assinalados').value);
 
-        dropzone.addEventListener('dragleave', () => {
-            dropzone.classList.remove('border-brand-500', 'bg-brand-50/50');
-        });
+            const indice = listados > 0 && pesquisas > 0 ? assinalados / (listados * pesquisas) : 0;
+            const indicador = indice * 100;
 
-        dropzone.addEventListener('drop', (e) => {
+            pfoData.push({
+                id: Date.now(),
+                data,
+                orgao,
+                fator,
+                descricao,
+                pesquisas,
+                listados,
+                assinalados,
+                indice: parseFloat(indice.toFixed(6)),
+                indicador: parseFloat(indicador.toFixed(2))
+            });
+
+            salvarDados();
+            fecharModal('modal-pfo');
+            document.getElementById('form-pfo').reset();
+            atualizarDashboard();
+            atualizarTabelas();
+            renderizarGraficos();
+        }
+
+        // ===================================================
+        // SALVAR FATOR 11
+        // ===================================================
+        function salvarFator11(e) {
             e.preventDefault();
-            dropzone.classList.remove('border-brand-500', 'bg-brand-50/50');
-            if (e.dataTransfer.files.length) {
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
+            const data = document.getElementById('f11-data').value;
+            const orgao = document.getElementById('f11-orgao').value;
+            const listados = parseInt(document.getElementById('f11-listados').value);
+            const assinalados = parseInt(document.getElementById('f11-assinalados').value);
+            const mitigacao = document.getElementById('f11-mitigacao').value;
+            const desc = document.getElementById('f11-desc').value;
 
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length) {
-                handleFile(e.target.files[0]);
-            }
-        });
-
-        document.getElementById('btnSample').addEventListener('click', () => {
-            const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            const orgaos = ["CINDACTA I", "CINDACTA II", "CINDACTA III", "CINDACTA IV", "CRCEA-SE"];
-            
-            const sampleData = [];
-
-            orgaos.forEach((orgao, oIdx) => {
-                meses.forEach((mes, mIdx) => {
-                    const factor = (oIdx + 1) * 10;
-                    sampleData.push({
-                        "Órgão": orgao,
-                        "Mês": mes,
-                        "Movimentos": Math.floor(1200 + Math.random() * 800 + factor * 5),
-                        "Incidente": Math.floor(Math.random() * 8),
-                        "RI": Math.floor(Math.random() * 5),
-                        "RA": Math.floor(Math.random() * 4),
-                        "Coordenação": Math.floor(15 + Math.random() * 25),
-                        "Planejamento": Math.floor(10 + Math.random() * 20),
-                        "Supervisão": Math.floor(20 + Math.random() * 30),
-                        "Habilidade": Math.floor(5 + Math.random() * 15),
-                        "Ocorrência": Math.floor(Math.random() * 10)
-                    });
-                });
-            });
-            
-            document.getElementById('fileNameText').innerText = "movimento_nadso_sigcea.ods";
-            processRawJson(sampleData, "Movimento NADSO SIGCEA");
-        });
-
-        function handleFile(file) {
-            document.getElementById('fileNameText').innerText = file.name;
-            const reader = new FileReader();
-
-            reader.onload = (e) => {
-                const data = new Uint8Array(e.target.result);
-                currentWorkbook = XLSX.read(data, { type: 'array' });
-
-                sheetSelect.innerHTML = '';
-                currentWorkbook.SheetNames.forEach(sheetName => {
-                    const opt = document.createElement('option');
-                    opt.value = sheetName;
-                    opt.textContent = sheetName;
-                    sheetSelect.appendChild(opt);
-                });
-
-                loadSheet(currentWorkbook.SheetNames[0]);
-            };
-
-            reader.readAsArrayBuffer(file);
-        }
-
-        sheetSelect.addEventListener('change', (e) => {
-            loadSheet(e.target.value);
-        });
-
-        function loadSheet(sheetName) {
-            const worksheet = currentWorkbook.Sheets[sheetName];
-            const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-            processRawJson(json, sheetName);
-        }
-
-        // Helper regex matching functions
-        function isOrgaoKey(keyName) {
-            return /órgão|orgao|organ|unidade|secretaria|entidade|governo|ministério|ministerio|autarquia|pasta/i.test(keyName);
-        }
-
-        function isTimeKey(keyName) {
-            return /ano|mês|mes|data|periodo|período|exercicio|exercício|trimestre|semestre/i.test(keyName);
-        }
-
-        function populateFilterOrgaoDropdown() {
-            selectFilterOrgao.innerHTML = '<option value="ALL">Todos os Órgãos</option>';
-            if (!detectedOrgaoKey || !currentSheetData) return;
-
-            const uniqueOrgaos = [...new Set(currentSheetData.map(r => String(r[detectedOrgaoKey] || '')).filter(Boolean))].sort();
-            uniqueOrgaos.forEach(orgao => {
-                const opt = document.createElement('option');
-                opt.value = orgao;
-                opt.textContent = orgao;
-                selectFilterOrgao.appendChild(opt);
-            });
-        }
-
-        function processRawJson(json, sheetName) {
-            if (!json || json.length === 0) {
-                alert("A aba selecionada está vazia!");
-                return;
-            }
-
-            currentSheetData = json;
-            const keys = Object.keys(json[0]);
-
-            document.getElementById('fileMetaText').innerText = `${json.length} registros • ${keys.length} colunas (${sheetName})`;
-
-            let timeKeys = keys.filter(k => isTimeKey(k));
-            let orgaoKeys = keys.filter(k => isOrgaoKey(k));
-            let metricKeys = keys.filter(k => !isTimeKey(k) && !isOrgaoKey(k));
-
-            detectedOrgaoKey = orgaoKeys[0] || keys.find(k => isOrgaoKey(k)) || "Órgão";
-
-            // Populate Eixo X (Meses)
-            selectX.innerHTML = '';
-            if (timeKeys.length > 0) {
-                timeKeys.forEach(k => {
-                    const opt = document.createElement('option');
-                    opt.value = k;
-                    opt.textContent = k;
-                    selectX.appendChild(opt);
-                });
-            } else {
-                keys.forEach(k => {
-                    const opt = document.createElement('option');
-                    opt.value = k;
-                    opt.textContent = k;
-                    selectX.appendChild(opt);
-                });
-            }
-
-            // Populate Eixo Y (Metrics)
-            selectY.innerHTML = '';
-            metricKeys.forEach(k => {
-                const optY = document.createElement('option');
-                optY.value = k;
-                optY.textContent = k;
-                selectY.appendChild(optY);
+            fator11Data.push({
+                id: Date.now(),
+                data,
+                orgao,
+                listados,
+                assinalados,
+                mitigacao,
+                desc
             });
 
-            populateFilterOrgaoDropdown();
-
-            selectX.value = timeKeys[0] || keys[0];
-            selectY.value = metricKeys.includes("Movimentos") ? "Movimentos" : (metricKeys[0] || keys[0]);
-
-            dashboardArea.classList.remove('hidden');
-
-            renderKpis(keys, metricKeys);
-            renderCharts();
-            renderTable();
-            generateAiSummary(metricKeys);
-
-            lucide.createIcons();
+            salvarDados();
+            fecharModal('modal-fator11');
+            document.getElementById('form-fator11').reset();
+            document.getElementById('f11-desc-group').style.display = 'none';
+            atualizarDashboard();
+            atualizarTabelas();
         }
 
-        function renderKpis(keys, metricKeys) {
-            const kpiGrid = document.getElementById('kpiGrid');
-            kpiGrid.innerHTML = '';
+        // ===================================================
+        // SALVAR MITIGAÇÃO
+        // ===================================================
+        function salvarMitigacao(e) {
+            e.preventDefault();
+            const orgao = document.getElementById('mit-orgao').value;
+            const fator = document.getElementById('mit-fator').value;
+            const medida = document.getElementById('mit-medida').value;
+            const responsavel = document.getElementById('mit-responsavel').value;
+            const status = document.getElementById('mit-status').value;
 
-            const totalRows = currentSheetData.length;
+            mitigacaoData.push({
+                id: Date.now(),
+                orgao,
+                fator,
+                medida,
+                responsavel,
+                status
+            });
 
-            kpiGrid.innerHTML += `
-                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-slate-200">
-                    <div class="p-3 bg-brand-100 text-brand-600 rounded-xl">
-                        <i data-lucide="database" class="w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium">Total de Registros</p>
-                        <h4 class="text-xl font-bold text-slate-900">${totalRows.toLocaleString('pt-BR')}</h4>
-                    </div>
-                </div>
-            `;
+            salvarDados();
+            fecharModal('modal-mitigacao');
+            document.getElementById('form-mitigacao').reset();
+            atualizarDashboard();
+            atualizarTabelas();
+        }
 
-            let orgaosCount = 0;
-            if (detectedOrgaoKey) {
-                orgaosCount = new Set(currentSheetData.map(r => r[detectedOrgaoKey])).size;
+        // ===================================================
+        // EXCLUIR REGISTROS
+        // ===================================================
+        function excluirPFO(id) {
+            if (confirm('Deseja excluir este registro?')) {
+                pfoData = pfoData.filter(d => d.id !== id);
+                salvarDados();
+                atualizarDashboard();
+                atualizarTabelas();
+                renderizarGraficos();
             }
-            kpiGrid.innerHTML += `
-                <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-slate-200">
-                    <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
-                        <i data-lucide="building-2" class="w-6 h-6"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium">Órgãos Analisados</p>
-                        <h4 class="text-xl font-bold text-slate-900">${orgaosCount || 1}</h4>
-                    </div>
-                </div>
-            `;
+        }
 
-            const primaryMetric = metricKeys.includes("Movimentos") ? "Movimentos" : (metricKeys[0] || keys[0]);
-            const secondaryMetric = metricKeys.includes("Ocorrência") ? "Ocorrência" : (metricKeys[1] || keys[1]);
+        function excluirFator11(id) {
+            if (confirm('Deseja excluir este registro?')) {
+                fator11Data = fator11Data.filter(d => d.id !== id);
+                salvarDados();
+                atualizarDashboard();
+                atualizarTabelas();
+            }
+        }
 
-            if (primaryMetric) {
-                const sumPrimary = currentSheetData.reduce((acc, r) => acc + (parseFloat(r[primaryMetric]) || 0), 0);
-                kpiGrid.innerHTML += `
-                    <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-slate-200">
-                        <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
-                            <i data-lucide="activity" class="w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500 font-medium">Total (${primaryMetric})</p>
-                            <h4 class="text-xl font-bold text-slate-900">${sumPrimary.toLocaleString('pt-BR')}</h4>
-                        </div>
-                    </div>
+        function excluirMitigacao(id) {
+            if (confirm('Deseja excluir esta medida?')) {
+                mitigacaoData = mitigacaoData.filter(d => d.id !== id);
+                salvarDados();
+                atualizarDashboard();
+                atualizarTabelas();
+            }
+        }
+
+        // ===================================================
+        // ATUALIZAR DASHBOARD
+        // ===================================================
+        function atualizarDashboard() {
+            const total = pfoData.length;
+            const mov = pfoData.reduce((s, d) => s + (d.pesquisas * 50), 0); // estimativa
+            const erros = pfoData.reduce((s, d) => s + d.assinalados, 0);
+            const indicadores = pfoData.map(d => d.indicador);
+            const media = indicadores.length > 0 ? (indicadores.reduce((a,b) => a + b, 0) / indicadores.length) : 0;
+            const orgaos = [...new Set(pfoData.map(d => d.orgao))];
+
+            document.getElementById('kpi-total').textContent = total;
+            document.getElementById('kpi-mov').textContent = mov.toLocaleString('pt-BR');
+            document.getElementById('kpi-erros').textContent = erros;
+            document.getElementById('kpi-indicador').textContent = media.toFixed(2) + '%';
+            document.getElementById('kpi-orgaos').textContent = orgaos.length;
+
+            // Últimas PFO
+            const tbody = document.getElementById('dashboard-tabela');
+            const ultimas = [...pfoData].reverse().slice(0, 5);
+            tbody.innerHTML = ultimas.map(d => `
+                <tr>
+                    <td>${d.data}</td>
+                    <td><span class="badge badge-blue">${d.orgao}</span></td>
+                    <td>${d.fator}</td>
+                    <td class="text-right">${d.pesquisas * 50}</td>
+                    <td class="text-right text-rose-400">${d.assinalados}</td>
+                    <td class="text-right font-bold text-amber-400">${d.indicador.toFixed(2)}%</td>
+                    <td class="text-center">
+                        <button onclick="excluirPFO(${d.id})" class="text-slate-500 hover:text-rose-400 text-xs">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" class="text-center text-slate-500 py-6">Nenhuma PFO registrada ainda</td></tr>';
+
+            // Fator 11 resumo
+            const tbodyF11 = document.getElementById('dashboard-fator11');
+            const orgaosF11 = [...new Set(fator11Data.map(d => d.orgao))];
+            tbodyF11.innerHTML = orgaosF11.map(o => {
+                const items = fator11Data.filter(d => d.orgao === o);
+                const ultimo = items[items.length - 1];
+                return `
+                    <tr>
+                        <td><span class="badge badge-blue">${o}</span></td>
+                        <td class="text-right">${ultimo ? ultimo.listados : 0}</td>
+                        <td class="text-right ${ultimo && ultimo.assinalados > 0 ? 'text-rose-400' : 'text-emerald-400'}">${ultimo ? ultimo.assinalados : 0}</td>
+                        <td class="text-center">
+                            ${ultimo && ultimo.mitigacao === 'Sim' 
+                                ? '<span class="badge badge-green">Com ação</span>' 
+                                : '<span class="badge badge-yellow">Sem ação</span>'}
+                        </td>
+                    </tr>
                 `;
-            }
-
-            if (secondaryMetric) {
-                const sumSecondary = currentSheetData.reduce((acc, r) => acc + (parseFloat(r[secondaryMetric]) || 0), 0);
-                kpiGrid.innerHTML += `
-                    <div class="glass-panel p-4 rounded-xl flex items-center gap-4 border border-slate-200">
-                        <div class="p-3 bg-amber-100 text-amber-600 rounded-xl">
-                            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-500 font-medium">Total (${secondaryMetric})</p>
-                            <h4 class="text-xl font-bold text-slate-900">${sumSecondary.toLocaleString('pt-BR')}</h4>
-                        </div>
-                    </div>
-                `;
-            }
+            }).join('') || '<tr><td colspan="4" class="text-center text-slate-500 py-6">Nenhum registro do Fator 11</td></tr>';
         }
 
-        function renderCharts() {
-            const xKey = selectX.value;
-            const yKey = selectY.value;
-            const selectedOrgao = selectFilterOrgao.value;
-            const chartType = selectChartType.value;
+        // ===================================================
+        // ATUALIZAR TABELAS
+        // ===================================================
+        function atualizarTabelas() {
+            // Tabela PFO
+            const tbodyPFO = document.getElementById('pfo-tabela');
+            tbodyPFO.innerHTML = pfoData.map(d => `
+                <tr>
+                    <td>${d.data}</td>
+                    <td><span class="badge badge-blue">${d.orgao}</span></td>
+                    <td>${d.fator}</td>
+                    <td class="text-slate-400 text-xs">${d.descricao || '-'}</td>
+                    <td class="text-center">${d.pesquisas}</td>
+                    <td class="text-center">${d.listados}</td>
+                    <td class="text-center text-rose-400 font-bold">${d.assinalados}</td>
+                    <td class="text-center">${d.indice.toFixed(6)}</td>
+                    <td class="text-center font-bold text-amber-400">${d.indicador.toFixed(2)}%</td>
+                    <td class="text-center">
+                        <button onclick="excluirPFO(${d.id})" class="text-slate-500 hover:text-rose-400">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="10" class="text-center text-slate-500 py-6">Nenhum registro PFO</td></tr>';
 
-            if (!xKey || !yKey || !currentSheetData) return;
+            // Tabela Fator 11
+            const tbodyF11 = document.getElementById('fator11-tabela');
+            tbodyF11.innerHTML = fator11Data.map(d => `
+                <tr>
+                    <td>${d.data}</td>
+                    <td><span class="badge badge-blue">${d.orgao}</span></td>
+                    <td class="text-center">${d.listados}</td>
+                    <td class="text-center ${d.assinalados > 0 ? 'text-rose-400' : 'text-emerald-400'} font-bold">${d.assinalados}</td>
+                    <td class="text-center">
+                        ${d.mitigacao === 'Sim' 
+                            ? '<span class="badge badge-green">Sim</span>' 
+                            : '<span class="badge badge-yellow">Não</span>'}
+                    </td>
+                    <td class="text-slate-400 text-xs">${d.desc || '-'}</td>
+                    <td class="text-center">
+                        <button onclick="excluirFator11(${d.id})" class="text-slate-500 hover:text-rose-400">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="7" class="text-center text-slate-500 py-6">Nenhum registro do Fator 11</td></tr>';
 
-            let filteredData = currentSheetData;
-            if (selectedOrgao && selectedOrgao !== 'ALL' && detectedOrgaoKey) {
-                filteredData = currentSheetData.filter(r => String(r[detectedOrgaoKey]) === String(selectedOrgao));
-            }
+            // Tabela Mitigações
+            const tbodyMit = document.getElementById('mitigacao-tabela');
+            tbodyMit.innerHTML = mitigacaoData.map(d => `
+                <tr>
+                    <td><span class="badge badge-blue">${d.orgao}</span></td>
+                    <td>${d.fator}</td>
+                    <td>${d.medida}</td>
+                    <td class="text-slate-400">${d.responsavel}</td>
+                    <td>
+                        <span class="badge ${d.status === 'Concluído' ? 'badge-green' : d.status === 'Em Andamento' ? 'badge-yellow' : 'badge-red'}">
+                            ${d.status}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <button onclick="excluirMitigacao(${d.id})" class="text-slate-500 hover:text-rose-400">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('') || '<tr><td colspan="6" class="text-center text-slate-500 py-6">Nenhuma medida mitigadora cadastrada</td></tr>';
+        }
 
-            const map = new Map();
-            filteredData.forEach(row => {
-                const label = String(row[xKey] !== undefined && row[xKey] !== null ? row[xKey] : 'N/A');
-                const val = parseFloat(row[yKey]) || 0;
-                map.set(label, (map.get(label) || 0) + val);
+        // ===================================================
+        // GRÁFICOS
+        // ===================================================
+        function renderizarGraficos() {
+            // Gráfico 1: Indicadores por Fator
+            const fatores = [...new Set(pfoData.map(d => d.fator))];
+            const indicadoresFator = fatores.map(f => {
+                const items = pfoData.filter(d => d.fator === f);
+                return items.length > 0 ? (items.reduce((a,b) => a + b.indicador, 0) / items.length) : 0;
             });
 
-            const monthOrder = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-            
-            let sortedEntries = Array.from(map.entries());
-            sortedEntries.sort((a, b) => {
-                let idxA = monthOrder.findIndex(m => m.toLowerCase() === a[0].toLowerCase());
-                let idxB = monthOrder.findIndex(m => m.toLowerCase() === b[0].toLowerCase());
-                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                return 0;
+            const ctx1 = document.getElementById('chartFatores').getContext('2d');
+            if (chartFatores) chartFatores.destroy();
+            chartFatores = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: fatores.map(f => f.substring(0, 20)),
+                    datasets: [{
+                        label: 'Indicador Médio (%)',
+                        data: indicadoresFator,
+                        backgroundColor: ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#fb923c', '#22d3ee', '#f472b6', '#4ade80', '#c084fc'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 } } }
+                    }
+                }
             });
 
-            const labels = sortedEntries.map(e => e[0]);
-            const dataValues = sortedEntries.map(e => e[1]);
+            // Gráfico 2: Evolução Temporal
+            const sorted = [...pfoData].sort((a,b) => a.data.localeCompare(b.data));
+            const labels = sorted.map(d => d.data);
+            const values = sorted.map(d => d.indicador);
 
-            const colors = [
-                '#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', 
-                '#06b6d4', '#f97316', '#64748b', '#84cc16', '#3b82f6', '#0284c7', '#d97706'
-            ];
-
-            if (chartInstance1) chartInstance1.destroy();
-            if (chartInstance2) chartInstance2.destroy();
-
-            const ctx1 = document.getElementById('mainChart').getContext('2d');
-            chartInstance1 = new Chart(ctx1, {
-                type: chartType,
+            const ctx2 = document.getElementById('chartEvolucao').getContext('2d');
+            if (chartEvolucao) chartEvolucao.destroy();
+            chartEvolucao = new Chart(ctx2, {
+                type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: `${yKey} ${selectedOrgao !== 'ALL' ? `[${selectedOrgao}]` : '(Todos os Órgãos)'}`,
-                        data: dataValues,
-                        backgroundColor: chartType === 'line' ? 'rgba(99, 102, 241, 0.15)' : colors,
-                        borderColor: '#4f46e5',
-                        borderWidth: 2,
-                        fill: chartType === 'line',
-                        tension: 0.35,
-                        pointBackgroundColor: '#4338ca',
+                        label: 'Indicador (%)',
+                        data: values,
+                        borderColor: '#34d399',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3,
                         pointRadius: 4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true, position: 'top' }
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 } } }
                     }
                 }
             });
 
-            const ctx2 = document.getElementById('secondaryChart').getContext('2d');
-            chartInstance2 = new Chart(ctx2, {
-                type: 'doughnut',
+            // Gráfico 3: Distribuição por Órgão
+            const orgaos = [...new Set(pfoData.map(d => d.orgao))];
+            const totalPorOrgao = orgaos.map(o => pfoData.filter(d => d.orgao === o).length);
+
+            const ctx3 = document.getElementById('chartOrgaos').getContext('2d');
+            if (chartOrgaos) chartOrgaos.destroy();
+            chartOrgaos = new Chart(ctx3, {
+                type: 'pie',
                 data: {
-                    labels: labels.slice(0, 12),
+                    labels: orgaos,
                     datasets: [{
-                        data: dataValues.slice(0, 12),
-                        backgroundColor: colors
+                        data: totalPorOrgao,
+                        backgroundColor: ['#38bdf8', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#fb923c', '#22d3ee']
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } }
+                        legend: { labels: { color: '#94a3b8', font: { size: 11 } } }
                     }
                 }
             });
         }
 
-        // Event listeners for chart controls
-        selectX.addEventListener('change', renderCharts);
-        selectY.addEventListener('change', renderCharts);
-        selectFilterOrgao.addEventListener('change', renderCharts);
-        selectChartType.addEventListener('change', renderCharts);
-
-        function renderTable() {
-            const tableHead = document.getElementById('tableHead');
-            const tableBody = document.getElementById('tableBody');
-            const searchInput = document.getElementById('searchInput');
-
-            const keys = Object.keys(currentSheetData[0] || {});
-
-            tableHead.innerHTML = `<tr>${keys.map(k => `<th class="px-4 py-3">${k}</th>`).join('')}</tr>`;
-
-            const filterAndDisplay = () => {
-                const query = searchInput.value.toLowerCase();
-                const filtered = currentSheetData.filter(row => 
-                    Object.values(row).some(v => String(v).toLowerCase().includes(query))
-                );
-
-                tableBody.innerHTML = filtered.slice(0, 50).map(row => `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                        ${keys.map(k => `<td class="px-4 py-2.5 whitespace-nowrap">${row[k] !== undefined ? row[k] : ''}</td>`).join('')}
-                    </tr>
-                `).join('');
+        // ===================================================
+        // EXPORTAR DADOS
+        // ===================================================
+        function exportarDados() {
+            const dados = {
+                exportadoEm: new Date().toISOString(),
+                normativo: 'MCA 63-16',
+                pfo: pfoData,
+                fator11: fator11Data,
+                mitigacoes: mitigacaoData
             };
-
-            searchInput.addEventListener('input', filterAndDisplay);
-            filterAndDisplay();
-        }
-
-        // Auto Insights Generator
-        function generateAiSummary(numericKeys) {
-            const aiText = document.getElementById('deepAnalysisOutput');
-            if (!numericKeys.length) {
-                aiText.innerHTML = `<p>A planilha foi carregada com sucesso. Clique em <b>"Gerar Análise Profunda com IA"</b> para obter insights automatizados do Gemini.</p>`;
-                return;
-            }
-
-            const key = numericKeys[0];
-            const values = currentSheetData.map(r => parseFloat(r[key])).filter(v => !isNaN(v));
-            const maxVal = Math.max(...values);
-            const minVal = Math.min(...values);
-            const sumVal = values.reduce((a, b) => a + b, 0);
-            const avgVal = values.length ? sumVal / values.length : 0;
-
-            const orgaoMsg = detectedOrgaoKey ? `• <b>Órgão Principal Detectado:</b> Campo <b>"${detectedOrgaoKey}"</b> categorizado automaticamente.<br>` : '';
-
-            aiText.innerHTML = `
-                <div class="space-y-2">
-                    <p>${orgaoMsg}• <b>Análise Preliminar (${key}):</b> O valor acumulado nesta aba é de <b>${sumVal.toLocaleString('pt-BR')}</b>, com média de <b>${avgVal.toFixed(2)}</b> por registro.</p>
-                    <p>• <b>Intervalo de Valores:</b> Pico máximo de <b>${maxVal.toLocaleString('pt-BR')}</b> e valor mínimo de <b>${minVal.toLocaleString('pt-BR')}</b>.</p>
-                    <p class="text-brand-600 font-medium pt-2">💡 Clique no botão <b>"Gerar Análise Profunda com IA"</b> acima para disparar o agente Gemini para um relatório estatístico por órgão e temporalidade!</p>
-                </div>
-            `;
+            const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'sipacea_dados_' + new Date().toISOString().slice(0,10) + '.json';
+            link.click();
         }
     </script>
+
 </body>
 </html>
