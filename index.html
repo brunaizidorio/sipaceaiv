@@ -24,6 +24,7 @@
         .badge-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
         .badge-amber { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
         .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a78bfa; }
+        .badge-gray { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
         input, select, textarea {
             background: #1e293b;
             border: 1px solid #334155;
@@ -49,8 +50,6 @@
         .btn-outline:hover { background: #1e293b; color: white; }
         .btn-orgao { background: #7c3aed; color: white; padding: 6px 14px; border-radius: 10px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
         .btn-orgao:hover { background: #6d28d9; }
-        .btn-orgao-remove { background: transparent; color: #f87171; padding: 4px 8px; border-radius: 8px; font-size: 12px; border: 1px solid #f87171/30; cursor: pointer; transition: all 0.2s; }
-        .btn-orgao-remove:hover { background: #f87171/20; }
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -67,7 +66,7 @@
             background: #1e293b;
             border: 1px solid #334155;
             border-radius: 20px;
-            max-width: 600px;
+            max-width: 650px;
             width: 100%;
             padding: 32px;
             max-height: 90vh;
@@ -82,23 +81,9 @@
             text-align: center;
         }
         .stat-card:hover { border-color: #334155; }
-        .stat-card .icon {
-            font-size: 24px;
-            margin-bottom: 6px;
-            display: block;
-        }
-        .stat-card .value {
-            font-size: 32px;
-            font-weight: 900;
-            color: white;
-        }
-        .stat-card .label {
-            font-size: 11px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 2px;
-        }
+        .stat-card .icon { font-size: 24px; margin-bottom: 6px; display: block; }
+        .stat-card .value { font-size: 32px; font-weight: 900; color: white; }
+        .stat-card .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
         .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #1e293b; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th { background: #0f172a; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; padding: 14px 16px; text-align: left; }
@@ -141,48 +126,25 @@
             font-size: 12px;
             color: #e2e8f0;
         }
-        .org-tag .remove {
-            color: #f87171;
-            cursor: pointer;
-            font-size: 14px;
-            margin-left: 4px;
-        }
+        .org-tag .remove { color: #f87171; cursor: pointer; font-size: 14px; margin-left: 4px; }
         .org-tag .remove:hover { color: #ef4444; }
-        .chart-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) {
-            .chart-grid { grid-template-columns: 1fr; }
-        }
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .chart-grid { grid-template-columns: 1fr; } }
         .chart-box {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid #1e293b;
             border-radius: 16px;
             padding: 16px;
         }
-        .chart-box h4 {
-            font-size: 13px;
-            font-weight: 700;
-            color: #94a3b8;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        .chart-box .chart-container {
-            height: 200px;
-            position: relative;
-        }
-        .grid-cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        @media (max-width: 500px) {
-            .grid-cards { grid-template-columns: 1fr; }
-        }
+        .chart-box h4 { font-size: 13px; font-weight: 700; color: #94a3b8; margin-bottom: 8px; text-align: center; }
+        .chart-box .chart-container { height: 200px; position: relative; }
+        .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 500px; margin: 0 auto; }
+        @media (max-width: 500px) { .grid-cards { grid-template-columns: 1fr; } }
+        .status-auto { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 9999px; display: inline-block; }
+        .status-concluido { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .status-andamento { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .status-atrasado { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+        .form-hint { font-size: 10px; color: #64748b; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -236,7 +198,6 @@
         <!-- ============================================= -->
         <section id="tab-dashboard" class="tab-content active space-y-6">
 
-            <!-- CARDS SIMPLIFICADOS: TOTAL PFO + ÓRGÃOS MONITORADOS -->
             <div class="grid-cards">
                 <div class="stat-card">
                     <span class="icon"><i class="fa-solid fa-clipboard-list text-sky-400"></i></span>
@@ -250,7 +211,6 @@
                 </div>
             </div>
 
-            <!-- ÚLTIMAS PFO -->
             <div class="glass rounded-2xl p-6 border border-slate-800">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-clock-rotate-left text-sky-400 mr-2"></i>Últimas PFO Registradas</h2>
@@ -261,14 +221,13 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Data</th><th>Órgão</th><th>Fator</th><th class="text-right">Indicador</th><th class="text-center">Ação</th></tr>
+                            <tr><th>Data</th><th>Órgão</th><th>Fator</th><th class="text-right">Mov.</th><th class="text-right">Indicador</th><th class="text-center">Ação</th></tr>
                         </thead>
                         <tbody id="dashboard-tabela"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- FATOR 11 RESUMO -->
             <div class="glass rounded-2xl p-6 border border-slate-800">
                 <h2 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-arrows-rotate text-amber-400 mr-2"></i>Resumo Fator 11 - Passagem de Posição (ACC-AZ)</h2>
                 <div class="table-wrap">
@@ -305,6 +264,7 @@
                                 <th>Fator</th>
                                 <th>Descrição</th>
                                 <th class="text-center">Pesquisas</th>
+                                <th class="text-center">Movimentos</th>
                                 <th class="text-center">Erros Listados</th>
                                 <th class="text-center">Erros Assinalados</th>
                                 <th class="text-center">Índice</th>
@@ -357,7 +317,7 @@
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <div>
                     <h2 class="text-base font-bold text-white"><i class="fa-solid fa-shield-halved text-emerald-400 mr-2"></i>Medidas Mitigadoras</h2>
-                    <p class="text-xs text-slate-400">Acompanhamento das ações corretivas (Anexo E)</p>
+                    <p class="text-xs text-slate-400">Acompanhamento das ações corretivas (Anexo E) — Status atualizado automaticamente</p>
                 </div>
                 <button onclick="abrirModalMitigacao()" class="btn-success text-sm flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i> Nova Medida
@@ -372,7 +332,8 @@
                                 <th>Fator</th>
                                 <th>Medida Proposta</th>
                                 <th>Responsável</th>
-                                <th>Status</th>
+                                <th>Prazo</th>
+                                <th>Status <span class="text-slate-500 text-[9px] font-normal">(automático)</span></th>
                                 <th class="text-center">Ações</th>
                             </tr>
                         </thead>
@@ -383,15 +344,13 @@
         </section>
 
         <!-- ============================================= -->
-        <!-- TAB: GRÁFICOS (UM POR ÓRGÃO) -->
+        <!-- TAB: GRÁFICOS -->
         <!-- ============================================= -->
         <section id="tab-graficos" class="tab-content space-y-6">
             <div class="glass rounded-2xl p-6 border border-slate-800">
                 <h2 class="text-base font-bold text-white mb-2"><i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i>Evolução do Indicador por Órgão</h2>
                 <p class="text-xs text-slate-400 mb-4">Cada gráfico mostra a tendência do indicador de erros ao longo do tempo para cada órgão cadastrado</p>
-                <div id="container-graficos-orgaos" class="chart-grid">
-                    <!-- Gráficos serão gerados dinamicamente -->
-                </div>
+                <div id="container-graficos-orgaos" class="chart-grid"></div>
             </div>
 
             <div class="glass rounded-2xl p-6 border border-slate-800">
@@ -406,7 +365,7 @@
         </section>
 
         <!-- ============================================= -->
-        <!-- TAB: ÓRGÃOS (CADASTRO) -->
+        <!-- TAB: ÓRGÃOS -->
         <!-- ============================================= -->
         <section id="tab-orgaos" class="tab-content space-y-6">
             <div class="glass rounded-2xl p-6 border border-slate-800">
@@ -441,7 +400,7 @@
     <!-- MODAIS -->
     <!-- ============================================= -->
 
-    <!-- MODAL PFO -->
+    <!-- MODAL PFO (COM MOVIMENTOS REAIS) -->
     <div id="modal-pfo" class="modal-overlay">
         <div class="modal-content">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
@@ -479,10 +438,15 @@
                     <label class="text-xs text-slate-400 block mb-1">Descrição do Fator</label>
                     <input type="text" id="pfo-descricao" placeholder="Ex: Erros de fraseologia nas comunicações" required>
                 </div>
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                         <label class="text-xs text-slate-400 block mb-1">Qtd Pesquisas</label>
                         <input type="number" id="pfo-pesquisas" min="1" required>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 block mb-1">Movimentos <span class="text-amber-400">*</span></label>
+                        <input type="number" id="pfo-movimentos" min="1" required>
+                        <p class="form-hint">Total de movimentos no ciclo</p>
                     </div>
                     <div>
                         <label class="text-xs text-slate-400 block mb-1">Erros Listados</label>
@@ -492,6 +456,13 @@
                         <label class="text-xs text-slate-400 block mb-1">Erros Assinalados</label>
                         <input type="number" id="pfo-erros-assinalados" min="0" required>
                     </div>
+                </div>
+                <div class="bg-slate-900/50 rounded-xl p-3 border border-slate-700 text-xs text-slate-400">
+                    <p><i class="fa-solid fa-calculator text-sky-400 mr-2"></i> 
+                        <strong>Índice</strong> = Erros Assinalados ÷ (Erros Listados × Movimentos) &nbsp;|&nbsp; 
+                        <strong>Indicador</strong> = Índice × 100%
+                    </p>
+                    <p class="text-[10px] text-slate-500 mt-1">Conforme MCA 63-16 Item 3.9.3</p>
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="fecharModal('modal-pfo')" class="btn-outline flex-1">Cancelar</button>
@@ -579,12 +550,17 @@
                     <input type="text" id="mit-responsavel" placeholder="Ex: Cap. Fernandes" required>
                 </div>
                 <div>
-                    <label class="text-xs text-slate-400 block mb-1">Status</label>
-                    <select id="mit-status" required>
-                        <option value="Pendente">Pendente</option>
-                        <option value="Em Andamento">Em Andamento</option>
+                    <label class="text-xs text-slate-400 block mb-1">Prazo para Conclusão</label>
+                    <input type="date" id="mit-prazo" required>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Status (opcional - se não preencher, será calculado automaticamente)</label>
+                    <select id="mit-status">
+                        <option value="auto">Automático (baseado no prazo)</option>
                         <option value="Concluído">Concluído</option>
+                        <option value="Em Andamento">Em Andamento</option>
                     </select>
+                    <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-robot"></i> Se escolher "Automático", o status será atualizado diariamente</p>
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="fecharModal('modal-mitigacao')" class="btn-outline flex-1">Cancelar</button>
@@ -606,7 +582,6 @@
         let mitigacaoData = [];
         let orgaosCadastrados = ['TWR-BE', 'APP-BE', 'ACC-AZ', 'APP-MN', 'TWR-EG', 'APP-EG', 'ACC-BS'];
 
-        // Referências dos gráficos
         let chartFatores = null;
         let chartOrgaos = null;
         let graficosOrgaos = {};
@@ -622,7 +597,6 @@
             atualizarSelects();
             renderizarGraficos();
 
-            // Tabs
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -633,15 +607,19 @@
                 });
             });
 
-            // Mostrar/esconder descrição da ação no Fator 11
             document.getElementById('f11-mitigacao').addEventListener('change', function() {
                 document.getElementById('f11-desc-group').style.display = this.value === 'Sim' ? 'block' : 'none';
             });
             document.getElementById('f11-desc-group').style.display = 'none';
+
+            setInterval(() => {
+                atualizarStatusMitigacoes();
+                atualizarTabelas();
+            }, 60000);
         });
 
         // ===================================================
-        // PERSISTÊNCIA (localStorage)
+        // PERSISTÊNCIA
         // ===================================================
         function salvarDados() {
             const dados = { pfoData, fator11Data, mitigacaoData, orgaosCadastrados };
@@ -664,6 +642,32 @@
         }
 
         // ===================================================
+        // ATUALIZAR STATUS DAS MITIGAÇÕES
+        // ===================================================
+        function atualizarStatusMitigacoes() {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            mitigacaoData = mitigacaoData.map(m => {
+                if (m.status === 'Concluído') return m;
+                if (m.status === 'Em Andamento' && m.statusManual === true) return m;
+
+                if (m.prazo) {
+                    const prazo = new Date(m.prazo);
+                    prazo.setHours(0, 0, 0, 0);
+
+                    if (prazo < hoje) {
+                        return { ...m, status: 'Atrasado', statusAuto: true };
+                    } else {
+                        return { ...m, status: 'Em Andamento', statusAuto: true };
+                    }
+                }
+                return { ...m, status: 'Em Andamento', statusAuto: true };
+            });
+            salvarDados();
+        }
+
+        // ===================================================
         // TOAST
         // ===================================================
         function showToast(message, type = 'success') {
@@ -683,7 +687,7 @@
         function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
 
         // ===================================================
-        // ATUALIZAR SELECTS
+        // SELECTS
         // ===================================================
         function atualizarSelects() {
             const selects = ['pfo-orgao', 'mit-orgao'];
@@ -700,7 +704,7 @@
         }
 
         // ===================================================
-        // ATUALIZAR LISTA DE ÓRGÃOS
+        // ÓRGÃOS
         // ===================================================
         function atualizarListaOrgaos() {
             const container = document.getElementById('lista-orgaos');
@@ -713,9 +717,6 @@
             `).join('');
         }
 
-        // ===================================================
-        // CADASTRAR ÓRGÃO
-        // ===================================================
         function cadastrarOrgao(e) {
             e.preventDefault();
             const input = document.getElementById('novo-orgao');
@@ -737,9 +738,6 @@
             showToast(`Órgão "${nome}" cadastrado com sucesso!`);
         }
 
-        // ===================================================
-        // REMOVER ÓRGÃO
-        // ===================================================
         function removerOrgao(nome) {
             if (nome === 'ACC-AZ') {
                 showToast('O órgão ACC-AZ não pode ser removido (obrigatório para Fator 11)', 'error');
@@ -756,7 +754,7 @@
         }
 
         // ===================================================
-        // SALVAR PFO
+        // SALVAR PFO (COM MOVIMENTOS REAIS)
         // ===================================================
         function salvarPFO(e) {
             e.preventDefault();
@@ -765,12 +763,17 @@
             const fator = document.getElementById('pfo-fator').value;
             const descricao = document.getElementById('pfo-descricao').value;
             const pesquisas = parseInt(document.getElementById('pfo-pesquisas').value);
+            const movimentos = parseInt(document.getElementById('pfo-movimentos').value);
             const listados = parseInt(document.getElementById('pfo-erros-listados').value);
             const assinalados = parseInt(document.getElementById('pfo-erros-assinalados').value);
 
             if (!orgao) { showToast('Selecione um órgão!', 'error'); return; }
+            if (movimentos < 1) { showToast('Movimentos deve ser maior que 0!', 'error'); return; }
 
-            const indice = listados > 0 && pesquisas > 0 ? assinalados / (listados * pesquisas) : 0;
+            // CÁLCULO CONFORME MCA 63-16 ITEM 3.9.3
+            // ÍNDICE = Erros Assinalados / (Erros Listados × Movimentos)
+            const indice = listados > 0 && movimentos > 0 ? assinalados / (listados * movimentos) : 0;
+            // INDICADOR (%) = ÍNDICE × 100
             const indicador = indice * 100;
 
             pfoData.push({
@@ -780,6 +783,7 @@
                 fator,
                 descricao,
                 pesquisas,
+                movimentos,
                 listados,
                 assinalados,
                 indice: parseFloat(indice.toFixed(6)),
@@ -834,9 +838,24 @@
             const fator = document.getElementById('mit-fator').value;
             const medida = document.getElementById('mit-medida').value;
             const responsavel = document.getElementById('mit-responsavel').value;
-            const status = document.getElementById('mit-status').value;
+            const prazo = document.getElementById('mit-prazo').value;
+            const statusInput = document.getElementById('mit-status').value;
 
             if (!orgao) { showToast('Selecione um órgão!', 'error'); return; }
+
+            let status = statusInput;
+            let statusManual = false;
+
+            if (statusInput === 'auto') {
+                const hoje = new Date();
+                hoje.setHours(0, 0, 0, 0);
+                const prazoDate = new Date(prazo);
+                prazoDate.setHours(0, 0, 0, 0);
+                status = prazoDate < hoje ? 'Atrasado' : 'Em Andamento';
+                statusManual = false;
+            } else {
+                statusManual = true;
+            }
 
             mitigacaoData.push({
                 id: Date.now(),
@@ -844,7 +863,10 @@
                 fator,
                 medida,
                 responsavel,
-                status
+                prazo,
+                status,
+                statusManual,
+                statusAuto: statusInput === 'auto'
             });
 
             salvarDados();
@@ -887,16 +909,24 @@
         }
 
         // ===================================================
+        // RENDER STATUS
+        // ===================================================
+        function renderStatusBadge(status) {
+            const classes = {
+                'Concluído': 'status-concluido',
+                'Em Andamento': 'status-andamento',
+                'Atrasado': 'status-atrasado'
+            };
+            return `<span class="status-auto ${classes[status] || 'status-andamento'}">${status}</span>`;
+        }
+
+        // ===================================================
         // ATUALIZAR DASHBOARD
         // ===================================================
         function atualizarDashboard() {
-            // Total de PFO
             document.getElementById('kpi-total').textContent = pfoData.length;
-            
-            // Total de órgãos cadastrados
             document.getElementById('kpi-orgaos').textContent = orgaosCadastrados.length;
 
-            // Últimas PFO (apenas 5)
             const tbody = document.getElementById('dashboard-tabela');
             const ultimas = [...pfoData].reverse().slice(0, 5);
             tbody.innerHTML = ultimas.map(d => `
@@ -904,6 +934,7 @@
                     <td>${d.data}</td>
                     <td><span class="badge badge-blue">${d.orgao}</span></td>
                     <td>${d.fator}</td>
+                    <td class="text-right font-mono">${d.movimentos.toLocaleString('pt-BR')}</td>
                     <td class="text-right font-bold text-amber-400">${d.indicador.toFixed(2)}%</td>
                     <td class="text-center">
                         <button onclick="excluirPFO(${d.id})" class="text-slate-500 hover:text-rose-400 text-xs">
@@ -911,9 +942,8 @@
                         </button>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="5" class="text-center text-slate-500 py-6">Nenhuma PFO registrada ainda</td></tr>';
+            `).join('') || '<tr><td colspan="6" class="text-center text-slate-500 py-6">Nenhuma PFO registrada ainda</td></tr>';
 
-            // Fator 11 resumo (apenas ACC-AZ)
             const tbodyF11 = document.getElementById('dashboard-fator11');
             const f11 = fator11Data;
             tbodyF11.innerHTML = f11.length > 0 ? f11.map(d => `
@@ -934,7 +964,8 @@
         // ATUALIZAR TABELAS
         // ===================================================
         function atualizarTabelas() {
-            // Tabela PFO
+            atualizarStatusMitigacoes();
+
             const tbodyPFO = document.getElementById('pfo-tabela');
             tbodyPFO.innerHTML = pfoData.map(d => `
                 <tr>
@@ -943,9 +974,10 @@
                     <td>${d.fator}</td>
                     <td class="text-slate-400 text-xs">${d.descricao || '-'}</td>
                     <td class="text-center">${d.pesquisas}</td>
+                    <td class="text-center font-mono">${d.movimentos.toLocaleString('pt-BR')}</td>
                     <td class="text-center">${d.listados}</td>
                     <td class="text-center text-rose-400 font-bold">${d.assinalados}</td>
-                    <td class="text-center">${d.indice.toFixed(6)}</td>
+                    <td class="text-center font-mono">${d.indice.toFixed(6)}</td>
                     <td class="text-center font-bold text-amber-400">${d.indicador.toFixed(2)}%</td>
                     <td class="text-center">
                         <button onclick="excluirPFO(${d.id})" class="text-slate-500 hover:text-rose-400">
@@ -953,9 +985,8 @@
                         </button>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="10" class="text-center text-slate-500 py-6">Nenhum registro PFO</td></tr>';
+            `).join('') || '<tr><td colspan="11" class="text-center text-slate-500 py-6">Nenhum registro PFO</td></tr>';
 
-            // Tabela Fator 11
             const tbodyF11 = document.getElementById('fator11-tabela');
             tbodyF11.innerHTML = fator11Data.map(d => `
                 <tr>
@@ -976,7 +1007,6 @@
                 </tr>
             `).join('') || '<tr><td colspan="6" class="text-center text-slate-500 py-6">Nenhum registro do Fator 11</td></tr>';
 
-            // Tabela Mitigações
             const tbodyMit = document.getElementById('mitigacao-tabela');
             tbodyMit.innerHTML = mitigacaoData.map(d => `
                 <tr>
@@ -984,22 +1014,19 @@
                     <td>${d.fator}</td>
                     <td>${d.medida}</td>
                     <td class="text-slate-400">${d.responsavel}</td>
-                    <td>
-                        <span class="badge ${d.status === 'Concluído' ? 'badge-green' : d.status === 'Em Andamento' ? 'badge-yellow' : 'badge-red'}">
-                            ${d.status}
-                        </span>
-                    </td>
+                    <td class="font-mono text-slate-400">${d.prazo || '-'}</td>
+                    <td>${renderStatusBadge(d.status)} ${d.statusAuto ? '<span class="text-[9px] text-slate-500 ml-1">(auto)</span>' : ''}</td>
                     <td class="text-center">
                         <button onclick="excluirMitigacao(${d.id})" class="text-slate-500 hover:text-rose-400">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="6" class="text-center text-slate-500 py-6">Nenhuma medida mitigadora cadastrada</td></tr>';
+            `).join('') || '<tr><td colspan="7" class="text-center text-slate-500 py-6">Nenhuma medida mitigadora cadastrada</td></tr>';
         }
 
         // ===================================================
-        // GRÁFICOS - UM POR ÓRGÃO
+        // GRÁFICOS
         // ===================================================
         function renderizarGraficos() {
             renderGraficosPorOrgao();
@@ -1068,18 +1095,10 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
-                            y: {
-                                grid: { color: 'rgba(255,255,255,0.05)' },
-                                ticks: { color: '#94a3b8', font: { size: 9 } }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { color: '#94a3b8', font: { size: 8 }, maxTicksLimit: 6 }
-                            }
+                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
+                            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 8 }, maxTicksLimit: 6 } }
                         }
                     }
                 });
