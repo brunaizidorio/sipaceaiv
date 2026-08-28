@@ -23,6 +23,8 @@
         .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         .badge-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
         .badge-amber { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+        .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a78bfa; }
+        .badge-gray { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
         input, select, textarea {
             background: #1e293b;
             border: 1px solid #334155;
@@ -146,6 +148,31 @@
         .status-atrasado { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         .form-hint { font-size: 10px; color: #64748b; margin-top: 4px; }
         .acoes-cell { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+        .chart-grid-fatores {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .chart-grid-fatores { grid-template-columns: 1fr; }
+        }
+        .chart-box-fator {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #1e293b;
+            border-radius: 16px;
+            padding: 16px;
+        }
+        .chart-box-fator h4 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .chart-box-fator .chart-container {
+            height: 180px;
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -222,7 +249,7 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Data</th><th>Órgão</th><th>Fator</th><th class="text-right">Mov.</th><th class="text-right">Indicador</th><th class="text-center">Ações</th></tr>
+                            <tr><th>Data</th><th>Órgão</th><th>Fator</th><th>Ciclo</th><th class="text-right">Mov.</th><th class="text-right">Indicador</th><th class="text-center">Ações</th></tr>
                         </thead>
                         <tbody id="dashboard-tabela"></tbody>
                     </table>
@@ -234,7 +261,7 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Data</th><th class="text-right">Erros Listados</th><th class="text-right">Erros Assinalados</th><th class="text-center">Status</th></tr>
+                            <tr><th>Data</th><th>Ciclo</th><th class="text-right">Erros Listados</th><th class="text-right">Erros Assinalados</th><th class="text-center">Status</th></tr>
                         </thead>
                         <tbody id="dashboard-fator11"></tbody>
                     </table>
@@ -263,6 +290,7 @@
                                 <th>Data</th>
                                 <th>Órgão</th>
                                 <th>Fator</th>
+                                <th>Ciclo</th>
                                 <th>Descrição</th>
                                 <th class="text-center">Pesquisas</th>
                                 <th class="text-center">Movimentos</th>
@@ -285,8 +313,8 @@
         <section id="tab-fator11" class="tab-content space-y-6">
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                    <h2 class="text-base font-bold text-white"><i class="fa-solid fa-arrows-rotate text-amber-400 mr-2"></i>Fator 11 - Passagem de Posição</h2>
-                    <p class="text-xs text-slate-400"><span class="badge badge-amber">APENAS ACC-AZ</span> Monitoramento obrigatório conforme MCA 63-16</p>
+                    <h2 class="text-base font-bold text-white"><i class="fa-solid fa-arrows-rotate text-amber-400 mr-2"></i>Fator 11 - Passagem de Posição Operacional</h2>
+                    <p class="text-xs text-slate-400"><span class="badge badge-amber">APENAS REGISTRO</span> Não entra no cálculo de indicador</p>
                 </div>
                 <button onclick="abrirModalFator11()" class="btn-success text-sm flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i> Registrar Fator 11
@@ -298,6 +326,8 @@
                         <thead>
                             <tr>
                                 <th>Data</th>
+                                <th>Órgão</th>
+                                <th>Ciclo</th>
                                 <th class="text-center">Erros Listados</th>
                                 <th class="text-center">Erros Assinalados</th>
                                 <th class="text-center">Ação Mitigadora?</th>
@@ -348,17 +378,22 @@
         <!-- TAB: GRÁFICOS -->
         <!-- ============================================= -->
         <section id="tab-graficos" class="tab-content space-y-6">
+            <!-- Gráficos por Órgão (todos os fatores) -->
             <div class="glass rounded-2xl p-6 border border-slate-800">
-                <h2 class="text-base font-bold text-white mb-2"><i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i>Evolução do Indicador por Órgão</h2>
-                <p class="text-xs text-slate-400 mb-4">Cada gráfico mostra a tendência do indicador de erros ao longo do tempo para cada órgão cadastrado</p>
-                <div id="container-graficos-orgaos" class="chart-grid"></div>
+                <h2 class="text-base font-bold text-white mb-2"><i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i>Evolução do Indicador por Órgão e Fator</h2>
+                <p class="text-xs text-slate-400 mb-4">Cada gráfico mostra a evolução do indicador para cada fator analisado no órgão</p>
+                <div id="container-graficos-orgaos" class="chart-grid">
+                    <!-- Gráficos gerados dinamicamente -->
+                </div>
             </div>
 
+            <!-- Comparativo por Fator -->
             <div class="glass rounded-2xl p-6 border border-slate-800">
-                <h2 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-chart-column text-sky-400 mr-2"></i>Indicadores por Fator Operacional</h2>
+                <h2 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-chart-column text-sky-400 mr-2"></i>Indicadores por Fator Operacional (média)</h2>
                 <div class="h-72"><canvas id="chartFatores"></canvas></div>
             </div>
 
+            <!-- Distribuição por Órgão -->
             <div class="glass rounded-2xl p-6 border border-slate-800">
                 <h2 class="text-sm font-bold text-white mb-4"><i class="fa-solid fa-chart-pie text-amber-400 mr-2"></i>Distribuição de PFO por Órgão</h2>
                 <div class="h-64"><canvas id="chartOrgaos"></canvas></div>
@@ -401,7 +436,7 @@
     <!-- MODAIS -->
     <!-- ============================================= -->
 
-    <!-- MODAL PFO (CADASTRO + EDIÇÃO) -->
+    <!-- MODAL PFO -->
     <div id="modal-pfo" class="modal-overlay">
         <div class="modal-content">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
@@ -437,8 +472,12 @@
                     </select>
                 </div>
                 <div>
+                    <label class="text-xs text-slate-400 block mb-1">Ciclo de Pesquisa (MM/YYYY)</label>
+                    <input type="month" id="pfo-ciclo" required>
+                </div>
+                <div>
                     <label class="text-xs text-slate-400 block mb-1">Descrição do Fator</label>
-                    <input type="text" id="pfo-descricao" placeholder="Ex: Erros de fraseologia nas comunicações" required>
+                    <input type="text" id="pfo-descricao" placeholder="Ex: Erros de fraseologia nas comunicações">
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
@@ -461,7 +500,7 @@
                 </div>
                 <div class="bg-slate-900/50 rounded-xl p-3 border border-slate-700 text-xs text-slate-400">
                     <p><i class="fa-solid fa-calculator text-sky-400 mr-2"></i> 
-                        <strong>Índice</strong> = Erros Assinalados ÷ (Erros Listados × Movimentos) &nbsp;|&nbsp; 
+                        <strong>Índice</strong> = Σ Erros Assinalados ÷ Σ (Erros Listados × Movimentos) &nbsp;|&nbsp; 
                         <strong>Indicador</strong> = Índice × 100%
                     </p>
                     <p class="text-[10px] text-slate-500 mt-1">Conforme MCA 63-16 Item 3.9.3</p>
@@ -474,7 +513,7 @@
         </div>
     </div>
 
-    <!-- MODAL FATOR 11 (CADASTRO + EDIÇÃO) -->
+    <!-- MODAL FATOR 11 -->
     <div id="modal-fator11" class="modal-overlay">
         <div class="modal-content">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
@@ -482,7 +521,7 @@
                 <button onclick="fecharModal('modal-fator11')" class="text-slate-400 hover:text-white text-xl">×</button>
             </div>
             <div class="bg-amber-950/30 border border-amber-500/20 rounded-xl p-3 mb-4 text-xs text-amber-300 flex items-center gap-2">
-                <i class="fa-solid fa-info-circle"></i> O Fator 11 é aplicável APENAS para o órgão ACC-AZ
+                <i class="fa-solid fa-info-circle"></i> Fator 11 - Passagem de Posição Operacional (APENAS REGISTRO, não entra no cálculo do indicador)
             </div>
             <form id="form-fator11" onsubmit="salvarFator11(event)" class="space-y-4">
                 <input type="hidden" id="f11-edit-id" value="">
@@ -493,9 +532,12 @@
                 <div>
                     <label class="text-xs text-slate-400 block mb-1">Órgão ATS</label>
                     <select id="f11-orgao" required>
-                        <option value="ACC-AZ">ACC-AZ</option>
+                        <option value="">Selecione...</option>
                     </select>
-                    <p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-lock"></i> Fixo: ACC-AZ (conforme MCA 63-16)</p>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 block mb-1">Ciclo de Pesquisa (MM/YYYY)</label>
+                    <input type="month" id="f11-ciclo" required>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -526,7 +568,7 @@
         </div>
     </div>
 
-    <!-- MODAL MITIGAÇÃO (CADASTRO + EDIÇÃO) -->
+    <!-- MODAL MITIGAÇÃO -->
     <div id="modal-mitigacao" class="modal-overlay">
         <div class="modal-content">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
@@ -685,12 +727,12 @@
         // ===================================================
         // MODAIS
         // ===================================================
-        function abrirModalPFO() { 
+        function abrirModalPFO() {
             document.getElementById('modal-pfo-title').textContent = 'Registrar PFO';
             document.getElementById('btn-pfo-submit').textContent = 'Salvar PFO';
             document.getElementById('pfo-edit-id').value = '';
             document.getElementById('form-pfo').reset();
-            document.getElementById('modal-pfo').classList.add('active'); 
+            document.getElementById('modal-pfo').classList.add('active');
         }
 
         function abrirModalFator11() {
@@ -725,6 +767,7 @@
             document.getElementById('pfo-data').value = item.data;
             document.getElementById('pfo-orgao').value = item.orgao;
             document.getElementById('pfo-fator').value = item.fator;
+            document.getElementById('pfo-ciclo').value = item.ciclo;
             document.getElementById('pfo-descricao').value = item.descricao || '';
             document.getElementById('pfo-pesquisas').value = item.pesquisas;
             document.getElementById('pfo-movimentos').value = item.movimentos;
@@ -742,6 +785,8 @@
             document.getElementById('btn-f11-submit').textContent = 'Atualizar';
             document.getElementById('f11-edit-id').value = id;
             document.getElementById('f11-data').value = item.data;
+            document.getElementById('f11-orgao').value = item.orgao;
+            document.getElementById('f11-ciclo').value = item.ciclo;
             document.getElementById('f11-listados').value = item.listados;
             document.getElementById('f11-assinalados').value = item.assinalados;
             document.getElementById('f11-mitigacao').value = item.mitigacao;
@@ -774,7 +819,7 @@
         // SELECTS
         // ===================================================
         function atualizarSelects() {
-            const selects = ['pfo-orgao', 'mit-orgao'];
+            const selects = ['pfo-orgao', 'f11-orgao', 'mit-orgao'];
             selects.forEach(id => {
                 const select = document.getElementById(id);
                 if (!select) return;
@@ -823,10 +868,6 @@
         }
 
         function removerOrgao(nome) {
-            if (nome === 'ACC-AZ') {
-                showToast('O órgão ACC-AZ não pode ser removido (obrigatório para Fator 11)', 'error');
-                return;
-            }
             if (!confirm(`Deseja remover o órgão "${nome}"?`)) return;
             orgaosCadastrados = orgaosCadastrados.filter(o => o !== nome);
             salvarDados();
@@ -838,7 +879,37 @@
         }
 
         // ===================================================
-        // SALVAR PFO (COM EDIÇÃO)
+        // FUNÇÃO PARA CALCULAR INDICADOR POR GRUPO
+        // (Órgão + Fator + Ciclo)
+        // ===================================================
+        function calcularIndicadorPorGrupo(orgao, fator, ciclo) {
+            const items = pfoData.filter(d => 
+                d.orgao === orgao && 
+                d.fator === fator && 
+                d.ciclo === ciclo
+            );
+
+            if (items.length === 0) return null;
+
+            const somaAssinalados = items.reduce((acc, curr) => acc + curr.assinalados, 0);
+            const somaProduto = items.reduce((acc, curr) => acc + (curr.listados * curr.movimentos), 0);
+
+            if (somaProduto === 0) return { indice: 0, indicador: 0 };
+
+            const indice = somaAssinalados / somaProduto;
+            const indicador = indice * 100;
+
+            return {
+                indice: parseFloat(indice.toFixed(6)),
+                indicador: parseFloat(indicador.toFixed(2)),
+                somaAssinalados,
+                somaProduto,
+                totalRegistros: items.length
+            };
+        }
+
+        // ===================================================
+        // SALVAR PFO (COM CÁLCULO CORRETO)
         // ===================================================
         function salvarPFO(e) {
             e.preventDefault();
@@ -846,6 +917,7 @@
             const data = document.getElementById('pfo-data').value;
             const orgao = document.getElementById('pfo-orgao').value;
             const fator = document.getElementById('pfo-fator').value;
+            const ciclo = document.getElementById('pfo-ciclo').value;
             const descricao = document.getElementById('pfo-descricao').value;
             const pesquisas = parseInt(document.getElementById('pfo-pesquisas').value);
             const movimentos = parseInt(document.getElementById('pfo-movimentos').value);
@@ -855,6 +927,7 @@
             if (!orgao) { showToast('Selecione um órgão!', 'error'); return; }
             if (movimentos < 1) { showToast('Movimentos deve ser maior que 0!', 'error'); return; }
 
+            // Calcula índice e indicador para este registro individual
             const indice = listados > 0 && movimentos > 0 ? assinalados / (listados * movimentos) : 0;
             const indicador = indice * 100;
 
@@ -863,6 +936,7 @@
                 data,
                 orgao,
                 fator,
+                ciclo,
                 descricao,
                 pesquisas,
                 movimentos,
@@ -889,21 +963,26 @@
         }
 
         // ===================================================
-        // SALVAR FATOR 11 (COM EDIÇÃO)
+        // SALVAR FATOR 11
         // ===================================================
         function salvarFator11(e) {
             e.preventDefault();
             const editId = document.getElementById('f11-edit-id').value;
             const data = document.getElementById('f11-data').value;
+            const orgao = document.getElementById('f11-orgao').value;
+            const ciclo = document.getElementById('f11-ciclo').value;
             const listados = parseInt(document.getElementById('f11-listados').value);
             const assinalados = parseInt(document.getElementById('f11-assinalados').value);
             const mitigacao = document.getElementById('f11-mitigacao').value;
             const desc = document.getElementById('f11-desc').value;
 
+            if (!orgao) { showToast('Selecione um órgão!', 'error'); return; }
+
             const novoRegistro = {
                 id: editId ? parseInt(editId) : Date.now(),
                 data,
-                orgao: 'ACC-AZ',
+                orgao,
+                ciclo,
                 listados,
                 assinalados,
                 mitigacao,
@@ -927,7 +1006,7 @@
         }
 
         // ===================================================
-        // SALVAR MITIGAÇÃO (COM EDIÇÃO)
+        // SALVAR MITIGAÇÃO
         // ===================================================
         function salvarMitigacao(e) {
             e.preventDefault();
@@ -1039,6 +1118,7 @@
                     <td>${d.data}</td>
                     <td><span class="badge badge-blue">${d.orgao}</span></td>
                     <td>${d.fator}</td>
+                    <td>${d.ciclo}</td>
                     <td class="text-right font-mono">${d.movimentos.toLocaleString('pt-BR')}</td>
                     <td class="text-right font-bold text-amber-400">${d.indicador.toFixed(2)}%</td>
                     <td class="text-center">
@@ -1052,13 +1132,14 @@
                         </div>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="6" class="text-center text-slate-500 py-6">Nenhuma PFO registrada ainda</td></tr>';
+            `).join('') || '<tr><td colspan="7" class="text-center text-slate-500 py-6">Nenhuma PFO registrada ainda</td></tr>';
 
             const tbodyF11 = document.getElementById('dashboard-fator11');
             const f11 = fator11Data;
             tbodyF11.innerHTML = f11.length > 0 ? f11.map(d => `
                 <tr>
                     <td>${d.data}</td>
+                    <td>${d.ciclo}</td>
                     <td class="text-right">${d.listados}</td>
                     <td class="text-right ${d.assinalados > 0 ? 'text-rose-400' : 'text-emerald-400'} font-bold">${d.assinalados}</td>
                     <td class="text-center">
@@ -1067,7 +1148,7 @@
                             : '<span class="badge badge-yellow">Sem ação</span>'}
                     </td>
                 </tr>
-            `).join('') : '<tr><td colspan="4" class="text-center text-slate-500 py-6">Nenhum registro do Fator 11</td></tr>';
+            `).join('') : '<tr><td colspan="5" class="text-center text-slate-500 py-6">Nenhum registro do Fator 11</td></tr>';
         }
 
         // ===================================================
@@ -1083,6 +1164,7 @@
                     <td>${d.data}</td>
                     <td><span class="badge badge-blue">${d.orgao}</span></td>
                     <td>${d.fator}</td>
+                    <td>${d.ciclo}</td>
                     <td class="text-slate-400 text-xs">${d.descricao || '-'}</td>
                     <td class="text-center">${d.pesquisas}</td>
                     <td class="text-center font-mono">${d.movimentos.toLocaleString('pt-BR')}</td>
@@ -1101,13 +1183,15 @@
                         </div>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="11" class="text-center text-slate-500 py-6">Nenhum registro PFO</td></tr>';
+            `).join('') || '<tr><td colspan="12" class="text-center text-slate-500 py-6">Nenhum registro PFO</td></tr>';
 
             // Tabela Fator 11
             const tbodyF11 = document.getElementById('fator11-tabela');
             tbodyF11.innerHTML = fator11Data.map(d => `
                 <tr>
                     <td>${d.data}</td>
+                    <td><span class="badge badge-blue">${d.orgao}</span></td>
+                    <td>${d.ciclo}</td>
                     <td class="text-center">${d.listados}</td>
                     <td class="text-center ${d.assinalados > 0 ? 'text-rose-400' : 'text-emerald-400'} font-bold">${d.assinalados}</td>
                     <td class="text-center">
@@ -1127,7 +1211,7 @@
                         </div>
                     </td>
                 </tr>
-            `).join('') || '<tr><td colspan="6" class="text-center text-slate-500 py-6">Nenhum registro do Fator 11</td></tr>';
+            `).join('') || '<tr><td colspan="8" class="text-center text-slate-500 py-6">Nenhum registro do Fator 11</td></tr>';
 
             // Tabela Mitigações
             const tbodyMit = document.getElementById('mitigacao-tabela');
@@ -1154,15 +1238,15 @@
         }
 
         // ===================================================
-        // GRÁFICOS
+        // GRÁFICOS - POR ÓRGÃO E FATOR
         // ===================================================
         function renderizarGraficos() {
-            renderGraficosPorOrgao();
+            renderGraficosPorOrgaoFator();
             renderFatoresChart();
             renderOrgaosChart();
         }
 
-        function renderGraficosPorOrgao() {
+        function renderGraficosPorOrgaoFator() {
             const container = document.getElementById('container-graficos-orgaos');
             if (!container) return;
 
@@ -1178,21 +1262,37 @@
 
             orgaosCadastrados.forEach((orgao, idx) => {
                 const dadosOrgao = pfoData.filter(d => d.orgao === orgao);
-                const sorted = [...dadosOrgao].sort((a,b) => a.data.localeCompare(b.data));
-
-                if (sorted.length === 0) {
+                
+                if (dadosOrgao.length === 0) {
                     container.innerHTML += `
                         <div class="chart-box">
-                            <h4>${orgao}</h4>
-                            <div class="text-center text-slate-500 text-xs py-8">Sem dados para este órgão</div>
+                            <h4>${orgao} - Sem dados</h4>
+                            <div class="text-center text-slate-500 text-xs py-8">Nenhuma PFO registrada para este órgão</div>
                         </div>
                     `;
                     return;
                 }
 
-                const labels = sorted.map(d => d.data);
-                const values = sorted.map(d => d.indicador);
-                const color = cores[idx % cores.length];
+                // Agrupa por fator
+                const fatores = [...new Set(dadosOrgao.map(d => d.fator))];
+                
+                // Para cada fator, pega os dados ordenados por data
+                const datasets = fatores.map((fator, fIdx) => {
+                    const items = dadosOrgao.filter(d => d.fator === fator).sort((a,b) => a.data.localeCompare(b.data));
+                    return {
+                        label: fator,
+                        data: items.map(d => d.indicador),
+                        borderColor: cores[fIdx % cores.length],
+                        backgroundColor: cores[fIdx % cores.length] + '22',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointBackgroundColor: cores[fIdx % cores.length],
+                        labels: items.map(d => d.data + ' (' + d.ciclo + ')')
+                    };
+                });
+
+                const allLabels = [...new Set(dadosOrgao.map(d => d.data + ' (' + d.ciclo + ')'))].sort();
 
                 const div = document.createElement('div');
                 div.className = 'chart-box';
@@ -1205,28 +1305,51 @@
                 container.appendChild(div);
 
                 const ctx = document.getElementById(`chart-orgao-${orgao.replace(/-/g, '')}`).getContext('2d');
+                
+                // Prepara os dados para o Chart.js
+                const chartData = {
+                    labels: allLabels,
+                    datasets: datasets.map((ds, i) => ({
+                        label: ds.label,
+                        data: ds.labels.map(label => {
+                            const item = dadosOrgao.find(d => (d.data + ' (' + d.ciclo + ')') === label);
+                            return item ? item.indicador : null;
+                        }),
+                        borderColor: cores[i % cores.length],
+                        backgroundColor: cores[i % cores.length] + '22',
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointBackgroundColor: cores[i % cores.length]
+                    }))
+                };
+
                 const chart = new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Indicador (%)',
-                            data: values,
-                            borderColor: color,
-                            backgroundColor: color + '22',
-                            fill: true,
-                            tension: 0.3,
-                            pointRadius: 4,
-                            pointBackgroundColor: color
-                        }]
-                    },
+                    data: chartData,
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
+                        plugins: {
+                            legend: { 
+                                labels: { 
+                                    color: '#94a3b8', 
+                                    font: { size: 9 },
+                                    boxWidth: 12,
+                                    padding: 4
+                                } 
+                            }
+                        },
                         scales: {
-                            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', font: { size: 9 } } },
-                            x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 8 }, maxTicksLimit: 6 } }
+                            y: { 
+                                grid: { color: 'rgba(255,255,255,0.05)' }, 
+                                ticks: { color: '#94a3b8', font: { size: 9 } },
+                                title: { display: true, text: 'Indicador (%)', color: '#94a3b8', font: { size: 9 } }
+                            },
+                            x: { 
+                                grid: { display: false }, 
+                                ticks: { color: '#94a3b8', font: { size: 8 }, maxTicksLimit: 8 }
+                            }
                         }
                     }
                 });
@@ -1235,10 +1358,14 @@
         }
 
         function renderFatoresChart() {
+            // Calcula média por fator considerando todos os registros
             const fatores = [...new Set(pfoData.map(d => d.fator))];
             const indicadoresFator = fatores.map(f => {
                 const items = pfoData.filter(d => d.fator === f);
-                return items.length > 0 ? (items.reduce((a,b) => a + b.indicador, 0) / items.length) : 0;
+                if (items.length === 0) return 0;
+                // Soma todos os indicadores e divide pela quantidade
+                const soma = items.reduce((acc, curr) => acc + curr.indicador, 0);
+                return soma / items.length;
             });
 
             const ctx = document.getElementById('chartFatores').getContext('2d');
