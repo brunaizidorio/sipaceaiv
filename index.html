@@ -23,8 +23,6 @@
         .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         .badge-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
         .badge-amber { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
-        .badge-purple { background: rgba(168, 85, 247, 0.15); color: #a78bfa; }
-        .badge-gray { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
         input, select, textarea {
             background: #1e293b;
             border: 1px solid #334155;
@@ -50,6 +48,8 @@
         .btn-outline:hover { background: #1e293b; color: white; }
         .btn-orgao { background: #7c3aed; color: white; padding: 6px 14px; border-radius: 10px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
         .btn-orgao:hover { background: #6d28d9; }
+        .btn-edit { background: transparent; color: #fbbf24; padding: 6px 12px; border-radius: 8px; font-size: 12px; border: 1px solid rgba(251, 191, 36, 0.3); cursor: pointer; transition: all 0.2s; }
+        .btn-edit:hover { background: rgba(251, 191, 36, 0.15); }
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -145,6 +145,7 @@
         .status-andamento { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
         .status-atrasado { background: rgba(239, 68, 68, 0.2); color: #f87171; }
         .form-hint { font-size: 10px; color: #64748b; margin-top: 4px; }
+        .acoes-cell { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -221,7 +222,7 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Data</th><th>Órgão</th><th>Fator</th><th class="text-right">Mov.</th><th class="text-right">Indicador</th><th class="text-center">Ação</th></tr>
+                            <tr><th>Data</th><th>Órgão</th><th>Fator</th><th class="text-right">Mov.</th><th class="text-right">Indicador</th><th class="text-center">Ações</th></tr>
                         </thead>
                         <tbody id="dashboard-tabela"></tbody>
                     </table>
@@ -279,7 +280,7 @@
         </section>
 
         <!-- ============================================= -->
-        <!-- TAB: FATOR 11 (APENAS ACC-AZ) -->
+        <!-- TAB: FATOR 11 -->
         <!-- ============================================= -->
         <section id="tab-fator11" class="tab-content space-y-6">
             <div class="flex items-center justify-between flex-wrap gap-4">
@@ -400,14 +401,15 @@
     <!-- MODAIS -->
     <!-- ============================================= -->
 
-    <!-- MODAL PFO (COM MOVIMENTOS REAIS) -->
+    <!-- MODAL PFO (CADASTRO + EDIÇÃO) -->
     <div id="modal-pfo" class="modal-overlay">
         <div class="modal-content">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
-                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-clipboard-list text-sky-400 mr-2"></i>Registrar PFO</h3>
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-clipboard-list text-sky-400 mr-2"></i><span id="modal-pfo-title">Registrar PFO</span></h3>
                 <button onclick="fecharModal('modal-pfo')" class="text-slate-400 hover:text-white text-xl">×</button>
             </div>
             <form id="form-pfo" onsubmit="salvarPFO(event)" class="space-y-4">
+                <input type="hidden" id="pfo-edit-id" value="">
                 <div>
                     <label class="text-xs text-slate-400 block mb-1">Data da Pesquisa</label>
                     <input type="date" id="pfo-data" required>
@@ -466,23 +468,24 @@
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="fecharModal('modal-pfo')" class="btn-outline flex-1">Cancelar</button>
-                    <button type="submit" class="btn-primary flex-1">Salvar PFO</button>
+                    <button type="submit" class="btn-primary flex-1" id="btn-pfo-submit">Salvar PFO</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL FATOR 11 -->
+    <!-- MODAL FATOR 11 (CADASTRO + EDIÇÃO) -->
     <div id="modal-fator11" class="modal-overlay">
         <div class="modal-content">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
-                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-arrows-rotate text-amber-400 mr-2"></i>Registrar Fator 11</h3>
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-arrows-rotate text-amber-400 mr-2"></i><span id="modal-f11-title">Registrar Fator 11</span></h3>
                 <button onclick="fecharModal('modal-fator11')" class="text-slate-400 hover:text-white text-xl">×</button>
             </div>
             <div class="bg-amber-950/30 border border-amber-500/20 rounded-xl p-3 mb-4 text-xs text-amber-300 flex items-center gap-2">
                 <i class="fa-solid fa-info-circle"></i> O Fator 11 é aplicável APENAS para o órgão ACC-AZ
             </div>
             <form id="form-fator11" onsubmit="salvarFator11(event)" class="space-y-4">
+                <input type="hidden" id="f11-edit-id" value="">
                 <div>
                     <label class="text-xs text-slate-400 block mb-1">Data</label>
                     <input type="date" id="f11-data" required>
@@ -517,20 +520,21 @@
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="fecharModal('modal-fator11')" class="btn-outline flex-1">Cancelar</button>
-                    <button type="submit" class="btn-success flex-1">Salvar</button>
+                    <button type="submit" class="btn-success flex-1" id="btn-f11-submit">Salvar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL MITIGAÇÃO -->
+    <!-- MODAL MITIGAÇÃO (CADASTRO + EDIÇÃO) -->
     <div id="modal-mitigacao" class="modal-overlay">
         <div class="modal-content">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
-                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-shield-halved text-emerald-400 mr-2"></i>Nova Medida Mitigadora</h3>
+                <h3 class="text-lg font-bold text-white"><i class="fa-solid fa-shield-halved text-emerald-400 mr-2"></i><span id="modal-mit-title">Nova Medida Mitigadora</span></h3>
                 <button onclick="fecharModal('modal-mitigacao')" class="text-slate-400 hover:text-white text-xl">×</button>
             </div>
             <form id="form-mitigacao" onsubmit="salvarMitigacao(event)" class="space-y-4">
+                <input type="hidden" id="mit-edit-id" value="">
                 <div>
                     <label class="text-xs text-slate-400 block mb-1">Órgão ATS</label>
                     <select id="mit-orgao" required>
@@ -554,7 +558,7 @@
                     <input type="date" id="mit-prazo" required>
                 </div>
                 <div>
-                    <label class="text-xs text-slate-400 block mb-1">Status (opcional - se não preencher, será calculado automaticamente)</label>
+                    <label class="text-xs text-slate-400 block mb-1">Status</label>
                     <select id="mit-status">
                         <option value="auto">Automático (baseado no prazo)</option>
                         <option value="Concluído">Concluído</option>
@@ -564,7 +568,7 @@
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button type="button" onclick="fecharModal('modal-mitigacao')" class="btn-outline flex-1">Cancelar</button>
-                    <button type="submit" class="btn-success flex-1">Salvar</button>
+                    <button type="submit" class="btn-success flex-1" id="btn-mit-submit">Salvar</button>
                 </div>
             </form>
         </div>
@@ -681,10 +685,90 @@
         // ===================================================
         // MODAIS
         // ===================================================
-        function abrirModalPFO() { document.getElementById('modal-pfo').classList.add('active'); }
-        function abrirModalFator11() { document.getElementById('modal-fator11').classList.add('active'); }
-        function abrirModalMitigacao() { document.getElementById('modal-mitigacao').classList.add('active'); }
+        function abrirModalPFO() { 
+            document.getElementById('modal-pfo-title').textContent = 'Registrar PFO';
+            document.getElementById('btn-pfo-submit').textContent = 'Salvar PFO';
+            document.getElementById('pfo-edit-id').value = '';
+            document.getElementById('form-pfo').reset();
+            document.getElementById('modal-pfo').classList.add('active'); 
+        }
+
+        function abrirModalFator11() {
+            document.getElementById('modal-f11-title').textContent = 'Registrar Fator 11';
+            document.getElementById('btn-f11-submit').textContent = 'Salvar';
+            document.getElementById('f11-edit-id').value = '';
+            document.getElementById('form-fator11').reset();
+            document.getElementById('f11-desc-group').style.display = 'none';
+            document.getElementById('modal-fator11').classList.add('active');
+        }
+
+        function abrirModalMitigacao() {
+            document.getElementById('modal-mit-title').textContent = 'Nova Medida Mitigadora';
+            document.getElementById('btn-mit-submit').textContent = 'Salvar';
+            document.getElementById('mit-edit-id').value = '';
+            document.getElementById('form-mitigacao').reset();
+            document.getElementById('modal-mitigacao').classList.add('active');
+        }
+
         function fecharModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // ===================================================
+        // FUNÇÕES DE EDIÇÃO
+        // ===================================================
+        function editarPFO(id) {
+            const item = pfoData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-pfo-title').textContent = '✏️ Editar PFO';
+            document.getElementById('btn-pfo-submit').textContent = 'Atualizar PFO';
+            document.getElementById('pfo-edit-id').value = id;
+            document.getElementById('pfo-data').value = item.data;
+            document.getElementById('pfo-orgao').value = item.orgao;
+            document.getElementById('pfo-fator').value = item.fator;
+            document.getElementById('pfo-descricao').value = item.descricao || '';
+            document.getElementById('pfo-pesquisas').value = item.pesquisas;
+            document.getElementById('pfo-movimentos').value = item.movimentos;
+            document.getElementById('pfo-erros-listados').value = item.listados;
+            document.getElementById('pfo-erros-assinalados').value = item.assinalados;
+
+            document.getElementById('modal-pfo').classList.add('active');
+        }
+
+        function editarFator11(id) {
+            const item = fator11Data.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-f11-title').textContent = '✏️ Editar Fator 11';
+            document.getElementById('btn-f11-submit').textContent = 'Atualizar';
+            document.getElementById('f11-edit-id').value = id;
+            document.getElementById('f11-data').value = item.data;
+            document.getElementById('f11-listados').value = item.listados;
+            document.getElementById('f11-assinalados').value = item.assinalados;
+            document.getElementById('f11-mitigacao').value = item.mitigacao;
+            document.getElementById('f11-desc').value = item.desc || '';
+            if (item.mitigacao === 'Sim') {
+                document.getElementById('f11-desc-group').style.display = 'block';
+            }
+
+            document.getElementById('modal-fator11').classList.add('active');
+        }
+
+        function editarMitigacao(id) {
+            const item = mitigacaoData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-mit-title').textContent = '✏️ Editar Medida Mitigadora';
+            document.getElementById('btn-mit-submit').textContent = 'Atualizar';
+            document.getElementById('mit-edit-id').value = id;
+            document.getElementById('mit-orgao').value = item.orgao;
+            document.getElementById('mit-fator').value = item.fator;
+            document.getElementById('mit-medida').value = item.medida;
+            document.getElementById('mit-responsavel').value = item.responsavel;
+            document.getElementById('mit-prazo').value = item.prazo || '';
+            document.getElementById('mit-status').value = item.statusAuto ? 'auto' : item.status;
+
+            document.getElementById('modal-mitigacao').classList.add('active');
+        }
 
         // ===================================================
         // SELECTS
@@ -754,10 +838,11 @@
         }
 
         // ===================================================
-        // SALVAR PFO (COM MOVIMENTOS REAIS)
+        // SALVAR PFO (COM EDIÇÃO)
         // ===================================================
         function salvarPFO(e) {
             e.preventDefault();
+            const editId = document.getElementById('pfo-edit-id').value;
             const data = document.getElementById('pfo-data').value;
             const orgao = document.getElementById('pfo-orgao').value;
             const fator = document.getElementById('pfo-fator').value;
@@ -770,14 +855,11 @@
             if (!orgao) { showToast('Selecione um órgão!', 'error'); return; }
             if (movimentos < 1) { showToast('Movimentos deve ser maior que 0!', 'error'); return; }
 
-            // CÁLCULO CONFORME MCA 63-16 ITEM 3.9.3
-            // ÍNDICE = Erros Assinalados / (Erros Listados × Movimentos)
             const indice = listados > 0 && movimentos > 0 ? assinalados / (listados * movimentos) : 0;
-            // INDICADOR (%) = ÍNDICE × 100
             const indicador = indice * 100;
 
-            pfoData.push({
-                id: Date.now(),
+            const novoRegistro = {
+                id: editId ? parseInt(editId) : Date.now(),
                 data,
                 orgao,
                 fator,
@@ -788,7 +870,15 @@
                 assinalados,
                 indice: parseFloat(indice.toFixed(6)),
                 indicador: parseFloat(indicador.toFixed(2))
-            });
+            };
+
+            if (editId) {
+                pfoData = pfoData.map(d => d.id === parseInt(editId) ? novoRegistro : d);
+                showToast('PFO atualizada com sucesso!');
+            } else {
+                pfoData.push(novoRegistro);
+                showToast('PFO registrada com sucesso!');
+            }
 
             salvarDados();
             fecharModal('modal-pfo');
@@ -796,29 +886,37 @@
             atualizarDashboard();
             atualizarTabelas();
             renderizarGraficos();
-            showToast('PFO registrada com sucesso!');
         }
 
         // ===================================================
-        // SALVAR FATOR 11
+        // SALVAR FATOR 11 (COM EDIÇÃO)
         // ===================================================
         function salvarFator11(e) {
             e.preventDefault();
+            const editId = document.getElementById('f11-edit-id').value;
             const data = document.getElementById('f11-data').value;
             const listados = parseInt(document.getElementById('f11-listados').value);
             const assinalados = parseInt(document.getElementById('f11-assinalados').value);
             const mitigacao = document.getElementById('f11-mitigacao').value;
             const desc = document.getElementById('f11-desc').value;
 
-            fator11Data.push({
-                id: Date.now(),
+            const novoRegistro = {
+                id: editId ? parseInt(editId) : Date.now(),
                 data,
                 orgao: 'ACC-AZ',
                 listados,
                 assinalados,
                 mitigacao,
                 desc
-            });
+            };
+
+            if (editId) {
+                fator11Data = fator11Data.map(d => d.id === parseInt(editId) ? novoRegistro : d);
+                showToast('Fator 11 atualizado com sucesso!');
+            } else {
+                fator11Data.push(novoRegistro);
+                showToast('Fator 11 registrado com sucesso!');
+            }
 
             salvarDados();
             fecharModal('modal-fator11');
@@ -826,14 +924,14 @@
             document.getElementById('f11-desc-group').style.display = 'none';
             atualizarDashboard();
             atualizarTabelas();
-            showToast('Fator 11 registrado com sucesso!');
         }
 
         // ===================================================
-        // SALVAR MITIGAÇÃO
+        // SALVAR MITIGAÇÃO (COM EDIÇÃO)
         // ===================================================
         function salvarMitigacao(e) {
             e.preventDefault();
+            const editId = document.getElementById('mit-edit-id').value;
             const orgao = document.getElementById('mit-orgao').value;
             const fator = document.getElementById('mit-fator').value;
             const medida = document.getElementById('mit-medida').value;
@@ -857,8 +955,8 @@
                 statusManual = true;
             }
 
-            mitigacaoData.push({
-                id: Date.now(),
+            const novoRegistro = {
+                id: editId ? parseInt(editId) : Date.now(),
                 orgao,
                 fator,
                 medida,
@@ -867,14 +965,21 @@
                 status,
                 statusManual,
                 statusAuto: statusInput === 'auto'
-            });
+            };
+
+            if (editId) {
+                mitigacaoData = mitigacaoData.map(d => d.id === parseInt(editId) ? novoRegistro : d);
+                showToast('Medida mitigadora atualizada com sucesso!');
+            } else {
+                mitigacaoData.push(novoRegistro);
+                showToast('Medida mitigadora registrada com sucesso!');
+            }
 
             salvarDados();
             fecharModal('modal-mitigacao');
             document.getElementById('form-mitigacao').reset();
             atualizarDashboard();
             atualizarTabelas();
-            showToast('Medida mitigadora registrada com sucesso!');
         }
 
         // ===================================================
@@ -937,9 +1042,14 @@
                     <td class="text-right font-mono">${d.movimentos.toLocaleString('pt-BR')}</td>
                     <td class="text-right font-bold text-amber-400">${d.indicador.toFixed(2)}%</td>
                     <td class="text-center">
-                        <button onclick="excluirPFO(${d.id})" class="text-slate-500 hover:text-rose-400 text-xs">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <div class="acoes-cell">
+                            <button onclick="editarPFO(${d.id})" class="btn-edit" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="excluirPFO(${d.id})" class="text-slate-500 hover:text-rose-400 text-xs" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('') || '<tr><td colspan="6" class="text-center text-slate-500 py-6">Nenhuma PFO registrada ainda</td></tr>';
@@ -966,6 +1076,7 @@
         function atualizarTabelas() {
             atualizarStatusMitigacoes();
 
+            // Tabela PFO
             const tbodyPFO = document.getElementById('pfo-tabela');
             tbodyPFO.innerHTML = pfoData.map(d => `
                 <tr>
@@ -980,13 +1091,19 @@
                     <td class="text-center font-mono">${d.indice.toFixed(6)}</td>
                     <td class="text-center font-bold text-amber-400">${d.indicador.toFixed(2)}%</td>
                     <td class="text-center">
-                        <button onclick="excluirPFO(${d.id})" class="text-slate-500 hover:text-rose-400">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <div class="acoes-cell">
+                            <button onclick="editarPFO(${d.id})" class="btn-edit" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="excluirPFO(${d.id})" class="text-slate-500 hover:text-rose-400" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('') || '<tr><td colspan="11" class="text-center text-slate-500 py-6">Nenhum registro PFO</td></tr>';
 
+            // Tabela Fator 11
             const tbodyF11 = document.getElementById('fator11-tabela');
             tbodyF11.innerHTML = fator11Data.map(d => `
                 <tr>
@@ -1000,13 +1117,19 @@
                     </td>
                     <td class="text-slate-400 text-xs">${d.desc || '-'}</td>
                     <td class="text-center">
-                        <button onclick="excluirFator11(${d.id})" class="text-slate-500 hover:text-rose-400">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <div class="acoes-cell">
+                            <button onclick="editarFator11(${d.id})" class="btn-edit" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="excluirFator11(${d.id})" class="text-slate-500 hover:text-rose-400" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('') || '<tr><td colspan="6" class="text-center text-slate-500 py-6">Nenhum registro do Fator 11</td></tr>';
 
+            // Tabela Mitigações
             const tbodyMit = document.getElementById('mitigacao-tabela');
             tbodyMit.innerHTML = mitigacaoData.map(d => `
                 <tr>
@@ -1017,9 +1140,14 @@
                     <td class="font-mono text-slate-400">${d.prazo || '-'}</td>
                     <td>${renderStatusBadge(d.status)} ${d.statusAuto ? '<span class="text-[9px] text-slate-500 ml-1">(auto)</span>' : ''}</td>
                     <td class="text-center">
-                        <button onclick="excluirMitigacao(${d.id})" class="text-slate-500 hover:text-rose-400">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <div class="acoes-cell">
+                            <button onclick="editarMitigacao(${d.id})" class="btn-edit" title="Editar">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="excluirMitigacao(${d.id})" class="text-slate-500 hover:text-rose-400" title="Excluir">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('') || '<tr><td colspan="7" class="text-center text-slate-500 py-6">Nenhuma medida mitigadora cadastrada</td></tr>';
